@@ -562,6 +562,10 @@ body.py-zy .td-wb{line-height:2}
 .hgw-stus{display:flex;gap:16px;align-items:flex-start}.hgw-stul{display:flex;flex-direction:column;gap:6px;min-width:130px}.hgw-stuf{flex:1;min-width:0}
 .hgw-help p{line-height:1.7;margin:0 0 10px}
 @media (max-width:760px){.hgw-stus{flex-direction:column}.hgw-stul{flex-direction:row;flex-wrap:wrap}.hgw-brand small{display:none}}
+.set-tabs{display:flex;gap:4px;flex-wrap:wrap;padding:8px 20px 0;border-bottom:1px solid var(--line)}.set-tabs button{border:0;border-bottom:2px solid transparent;border-radius:0;background:transparent;padding:6px 10px}.set-tabs button.on{border-bottom-color:var(--accent);color:var(--accent-text);font-weight:600}
+.set-row{border:1px solid var(--line);border-radius:10px;padding:8px 10px;margin:0 0 8px;display:flex;flex-direction:column;gap:6px}.set-line{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.set-col{width:22px;height:22px;border-radius:50%;padding:0;border:2px solid #fff;box-shadow:0 0 0 1px var(--line);cursor:pointer}.set-col.on{box-shadow:0 0 0 2px var(--ink)}
+.set-chk{display:inline-flex;align-items:center;gap:4px;margin:0 8px 0 0;font-size:13px}.set-ch{width:44px;text-align:center;font-size:18px}.set-demo{font-family:var(--zh);font-size:16px;margin-left:6px}.set-btns{display:flex;gap:8px;flex-wrap:wrap}
 </style></head><body>
 <header>
   <button class="ghost" id="btnSide" title="Show or hide the page list" aria-label="Pages">☰</button>
@@ -580,7 +584,7 @@ body.py-zy .td-wb{line-height:2}
   <aside class="side" id="side"></aside>
   <main id="main"><div class="inner" id="inner"><div class="empty"><div class="big">載入中… Loading…</div></div></div></main>
 </div>
-<input type="file" id="fileIn" accept=".json" hidden>
+<input type="file" id="fileIn" accept=".json" hidden><input type="file" id="ruleIn" accept=".json" hidden>
 <div id="pdfStage"></div>
 <script src="https://cdn.jsdelivr.net/npm/pinyin-pro@3.26.0/dist/index.js"></script>
 <script>
@@ -860,7 +864,7 @@ function renderZh(text, k, cols) {
   return `<span class="zh"${k ? ` data-k="${k}"` : ''}>${html}</span>`;
 }
 const rtFrom = (text, html) => linesHtml(docLines({ said: text || '', html: html || '' }));
-const richPlain = (text, html) => docLines({ said: text || '', html: html || '' }).map(rs => rs.map(r => { let x = esc(r.t); if (r.s) x = `<s>${x}</s>`; if (r.u) x = `<u>${x}</u>`; if (r.b) x = `<b>${x}</b>`; if (r.h) x = `<mark class="f-hl hl-${r.h}"${r.h === 'g' && r.m ? ` data-m="${esc(r.m)}"` : ''}${r.h === 'y' && r.n ? ` data-n="${esc(r.n)}"` : ''}>${x}</mark>`; return x; }).join('')).join('<br>');
+const richPlain = (text, html) => docLines({ said: text || '', html: html || '' }).map(rs => rs.map(r => { let x = esc(r.t); if (r.s) x = `<s>${x}</s>`; if (r.u) x = `<u>${x}</u>`; if (r.b) x = `<b>${x}</b>`; if (r.h) x = `<mark class="f-hl hl-${r.h}"${hlAuto(r.h) && r.m ? ` data-m="${esc(r.m)}"` : ''}${hlNote(r.h) && r.n ? ` data-n="${esc(r.n)}"` : ''}>${x}</mark>`; return x; }).join('')).join('<br>');
 let POP = null;
 function closePop() { $('.pop')?.remove(); POP = null; }
 function openPop(rect, info) {
@@ -876,7 +880,7 @@ function openPop(rect, info) {
   const charsH = (word.length > 1 && word.length <= 6 && [...word].every(isHan)) ? `<div class="chars">${[...word].map(c => `<b>${esc(c)}</b> ${esc((shortMeaning(c) || '').split(';')[0])}`).join(' · ')}</div>` : '';
   let h = `<div class="ph"><span class="pz">${esc(zhDisp(word))}</span><span class="pp">${esc(py)}</span><span class="pzy">${esc(splitPinyin(py).map(zyOf).join(' '))}</span>
     <span class="spacer"></span><button class="ghost" data-pop="say" aria-label="Read aloud">🔊</button></div><div class="defs">${defsH}</div>${charsH}`;
-  if (info.wb && info.wbCur === 'y') h += `<div class="status" style="margin-top:6px">老師解釋 Your explanation</div><div class="rt pop-note" contenteditable="true" spellcheck="false" data-pop="wbnote" id="wbNote" data-ph="Explain it for the student…">${esc(info.wbNote || '')}</div>`;
+  if (info.wb && hlNote(info.wbCur)) h += `<div class="status" style="margin-top:6px">老師解釋 Your explanation</div><div class="rt pop-note" contenteditable="true" spellcheck="false" data-pop="wbnote" id="wbNote" data-ph="Explain it for the student…">${esc(info.wbNote || '')}</div>`;
   if (info.wb) h += `<div class="hl-pick">${HL_CATS.map(([c, zh, en]) => `<button class="swl${info.wbCur === c ? ' on' : ''}" data-pop="wbhl" data-c="${c}" title="${en}"><i class="sw ${c}"></i>${zh}</button>`).join('')}${info.wbCur ? '<button class="swl" data-pop="wbhl" data-c=""><i class="sw" style="background:transparent;border:1px dashed var(--muted)"></i>清除螢光筆</button>' : ''}</div>`;
   if (k && (CAN_WRITE || STUDENT)) {
     if (ann && ann.t !== word) h += `<div class="phrase">Highlighted: <b>${esc(ann.t)}</b></div>`;
@@ -941,13 +945,13 @@ async function newWordMeaning(word, sentence) {
 async function fillBoxMeanings(box) {
   if (!box || !box.isConnected) return;
   const lines = edLines(box); const jobs = [];
-  lines.forEach(rs => { const sent = rs.map(r => r.t).join(''); rs.forEach(r => { if (r.h === 'g' && !r.m && r.t.trim()) jobs.push({ r, sent }); }); });
+  lines.forEach(rs => { const sent = rs.map(r => r.t).join(''); rs.forEach(r => { if (hlAuto(r.h) && !r.m && r.t.trim()) jobs.push({ r, sent }); }); });
   if (!jobs.length) return;
   for (const j of jobs) j.mean = await newWordMeaning(j.r.t.trim(), j.sent);
   if (!box.isConnected) return;
   if (box.id === 'tkDoc') {
     const now = edLines(box);
-    now.forEach(rs => rs.forEach(r => { if (r.h === 'g' && !r.m) { const j = jobs.find(x => x.r.t === r.t && x.mean); if (j) r.m = j.mean; } }));
+    now.forEach(rs => rs.forEach(r => { if (hlAuto(r.h) && !r.m) { const j = jobs.find(x => x.r.t === r.t && x.mean); if (j) r.m = j.mean; } }));
     wbApply(box, now); saveTalkDoc(linesText(now), linesHtml(now));
   } else {
     $$('mark.f-hl.hl-g:not([data-m]), [style*="background"]', box).forEach(el => { if (hlOf(el) !== 'g' || el.dataset.m) return; const j = jobs.find(x => x.r.t === el.textContent && x.mean); if (j) el.setAttribute('data-m', j.mean); });
@@ -990,11 +994,11 @@ const todayISO = () => { const d = new Date(); return new Date(d.getTime() - d.g
 const tdText = s => HAN.test(s) ? renderZh(s, '') : esc(s);
 const TD_WORD = /(^|[，,、；;。！？!?\s])([\p{Script=Han}·]{1,4})[ \t]*[:：\-–—|]?[ \t]*([A-Za-z][A-Za-z'’ \-]*[A-Za-z])/gu;
 function tdWords(t) { const out = []; for (const m of String(t).matchAll(TD_WORD)) { const s0 = m.index + m[1].length; out.push({ s: s0, e: m.index + m[0].length, w: m[2], mean: m[3].trim() }); } return out; }
-const HL_CATS = [['g', '新生詞', 'New word'], ['p', '發音加強', 'Pronunciation'], ['b', '舊生詞忘記', 'Forgot (old word)'], ['y', '一般畫記', 'Highlight']];
-const hlCat = c => HL_CATS.find(x => x[0] === c) || HL_CATS[3];
-const HL_HEX = { y: '#ffe17a', g: '#c4ecc4', p: '#ffcfd9', b: '#c8e2f0' };
+let HL_CATS = [['g', '新生詞', 'New word'], ['p', '發音加強', 'Pronunciation'], ['b', '舊生詞忘記', 'Forgot (old word)'], ['y', '一般畫記', 'Highlight']];   // set from the teacher's rules (applyRules)
+const hlCat = c => HL_CATS.find(x => x[0] === c) || [c, '', ''];
+let HL_HEX = { y: '#ffe17a', g: '#c4ecc4', p: '#ffcfd9', b: '#c8e2f0' };
 function hlOf(n) {
-  const m = (n.className && typeof n.className === 'string') ? n.className.match(/\bhl-([ygpb])\b/) : null; if (m && /\bf-hl\b/.test(n.className)) return m[1];
+  const m = (n.className && typeof n.className === 'string') ? n.className.match(/\bhl-(?!mean\b|note\b|pick\b)([a-z0-9]+)\b/) : null; if (m && /\bf-hl\b/.test(n.className)) return m[1];
   const bgc = n.style && n.style.backgroundColor; if (!bgc) return null;
   const rgb = (bgc.match(/\d+(\.\d+)?/g) || []).map(Number); if (rgb.length < 3 || rgb[3] === 0 || /transparent/.test(bgc)) return '';
   let best = '', d0 = 1e9; for (const [c, hx] of Object.entries(HL_HEX)) { const v = [1, 3, 5].map(i => parseInt(hx.slice(i, i + 2), 16)); const d = v.reduce((s, x, i) => s + (x - rgb[i]) ** 2, 0); if (d < d0) { d0 = d; best = c; } }
@@ -1022,63 +1026,75 @@ function edLines(root) {
   return lines.map(rs => rs.reduce((a, r) => { const l = a[a.length - 1]; if (l && l.b === r.b && l.u === r.u && l.s === r.s && (l.h || '') === (r.h || '') && (l.m || '') === (r.m || '') && (l.n || '') === (r.n || '')) l.t += r.t; else a.push({ ...r }); return a; }, []));
 }
 const linesText = lines => lines.map(rs => rs.map(r => r.t).join('')).join('\n');
-const linesHtml = lines => lines.map(rs => `<div>${rs.length ? rs.map(r => { let x = esc(r.t); if (r.s) x = `<s>${x}</s>`; if (r.u) x = `<u>${x}</u>`; if (r.b) x = `<b>${x}</b>`; if (r.h) x = `<mark class="f-hl hl-${r.h}"${r.h === 'g' && r.m ? ` data-m="${esc(r.m)}"` : ''}${r.h === 'y' && r.n ? ` data-n="${esc(r.n)}"` : ''}>${x}</mark>`; return x; }).join('') : '<br>'}</div>`).join('');
+const linesHtml = lines => lines.map(rs => `<div>${rs.length ? rs.map(r => { let x = esc(r.t); if (r.s) x = `<s>${x}</s>`; if (r.u) x = `<u>${x}</u>`; if (r.b) x = `<b>${x}</b>`; if (r.h) x = `<mark class="f-hl hl-${r.h}"${hlAuto(r.h) && r.m ? ` data-m="${esc(r.m)}"` : ''}${hlNote(r.h) && r.n ? ` data-n="${esc(r.n)}"` : ''}>${x}</mark>`; return x; }).join('') : '<br>'}</div>`).join('');
 function docLines(D) {
   if (D && D.html) { try { return edLines(new DOMParser().parseFromString(`<body>${D.html}</body>`, 'text/html').body); } catch (e) {} }
   return String(D?.said || '').split('\n').map(l => l ? [{ t: l, b: false, u: false, s: false }] : []);
 }
+// the teacher's symbol rules (see applyRules): which characters each rule covers, and which are the symbols themselves
+function symScan(ch) {
+  const n = ch.length, cov = new Array(n).fill(''), del = new Array(n).fill('');
+  for (const r of SYMS) {
+    if (!r.on) continue; let d = 0; const same = r.o.some(x => r.c.includes(x));
+    for (let i = 0; i < n; i++) {
+      if (del[i]) continue;
+      const isO = r.o.includes(ch[i]), isC = r.c.includes(ch[i]);
+      if (same && isO) { del[i] = r.id; d = d ? 0 : 1; continue; }
+      if (isO) { d++; del[i] = r.id; continue; }
+      if (isC && d) { d--; del[i] = r.id; continue; }
+      if (d && !cov[i]) cov[i] = r.id;
+    }
+  }
+  return { cov, del };
+}
+// one line → html: formatting, the teacher's symbol rules, highlights and typed new words. o.pdf renders for the PDF; o.noWords leaves new words out.
 function tdLine(runs, o = {}) {
   const ch = [], fm = [];
   for (const r of runs) for (const c of r.t.split('')) { ch.push(c); fm.push(r); }
   const plain = ch.join(''); const n = ch.length; if (!plain.trim()) return '';
-  const hide = new Array(n).fill(false), mark = new Array(n).fill(false), side = new Array(n).fill(''), word = new Array(n).fill('');
-  let depth = 0;
-  for (let i = 0; i < n; i++) { if (ch[i] === '[') { depth++; hide[i] = true; } else if (ch[i] === ']' && depth) { depth--; hide[i] = true; } else if (depth) mark[i] = true; }
-  // ( ) = a part that can be ignored: shown light grey, never a new word
-  const ign = new Array(n).fill(false); { let pd = 0; for (let i = 0; i < n; i++) { if (ch[i] === '(' || ch[i] === '（') pd++; if (pd) ign[i] = true; if ((ch[i] === ')' || ch[i] === '）') && pd) pd--; } }
-  const am = null; let arrowAt = -1;
-  if (am) {
-    arrowAt = am.index;
-    for (let i = 0; i < n; i++) side[i] = i < am.index ? 'w' : i >= am.index + am[0].length ? 'r' : (hide[i] = true, '');
+  const { cov, del } = symScan(ch); const rule = id => SYMS.find(r => r.id === id) || {};
+  const hide = new Array(n).fill(false), brk = new Array(n).fill(false), sy = new Array(n).fill(''), word = new Array(n).fill('');
+  for (let i = 0; i < n; i++) {
+    if (del[i]) { if (rule(del[i]).show) sy[i] = del[i]; else if (o.edit) brk[i] = true; else hide[i] = true; }
+    else if (cov[i]) sy[i] = cov[i];
   }
-  for (const x of tdWords(plain)) {
-    let clash = false; for (let i = x.s; i < x.e; i++) if (mark[i] || hide[i] || ign[i]) clash = true;
+  if (WORD_RULE.on) for (const x of tdWords(plain)) {
+    let clash = false; for (let i = x.s; i < x.e; i++) if (sy[i] || del[i]) clash = true;
     if (!clash) for (let i = x.s; i < x.e; i++) word[i] = i < x.s + x.w.length ? 'h' : 'e';
   }
-  const brk = new Array(n).fill(false);
-  if (o.edit) for (let i = 0; i < n; i++) if (hide[i]) { brk[i] = true; hide[i] = false; }
+  const grey = i => !!sy[i] && rule(sy[i]).fx === 'grey';
   const show = i => !hide[i] && !(o.noWords && word[i]);
   if (o.noWords && !ch.some((c, i) => show(i) && /[\p{Script=Han}A-Za-z0-9]/u.test(c))) return '';
   // in the PDF a highlight goes on each character box (a background on the outer span paints over the text there)
   const pieceHtml = (t, hl) => o.pdf ? (HAN.test(t) ? (hl ? pdfZh(t, 'w', o.py, [{ k: 'w', s: 0, e: t.length, c: hl }]) : pdfZh(t, '', o.py, [])) : hl ? `<span class="hl-${hl}">${esc(t)}</span>` : esc(t)) : tdText(t);
-  let h = '', i = 0, arrowDone = false;
+  let h = '', i = 0;
   while (i < n) {
-    if (!show(i)) { if (i === arrowAt + 0 && arrowAt >= 0 && !arrowDone) { h += '<span class="td-arrow">→</span>'; arrowDone = true; } i++; continue; }
-    const key = k => [fm[k].b, fm[k].u, fm[k].s, fm[k].h || '', fm[k].m || '', fm[k].n || '', mark[k], side[k], word[k], brk[k], ign[k]].join();
+    if (!show(i)) { i++; continue; }
+    const key = k => [fm[k].b, fm[k].u, fm[k].s, fm[k].h || '', fm[k].m || '', fm[k].n || '', sy[k], word[k], brk[k]].join();
     let j = i + 1; while (j < n && show(j) && key(j) === key(i)) j++;
-    const cls = [fm[i].b && 'f-b', fm[i].u && 'f-u', fm[i].s && 'f-s', mark[i] && 'f-m', side[i] === 'w' && 'td-wrong', side[i] === 'r' && 'td-right', word[i] === 'h' && 'td-word', word[i] === 'e' && 'td-en', fm[i].h && !o.pdf && (!ign[i] || o.edit) && 'f-hl hl-' + fm[i].h, brk[i] && 'td-br', ign[i] && 'td-ign'].filter(Boolean);
+    const ig = grey(i), hc = fm[i].h;
+    const cls = [fm[i].b && 'f-b', fm[i].u && 'f-u', fm[i].s && 'f-s', sy[i] && 'sym-' + sy[i], ig && 'td-ign', word[i] === 'h' && 'td-word', word[i] === 'e' && 'td-en', hc && !o.pdf && (!ig || o.edit) && 'f-hl hl-' + hc, brk[i] && 'td-br'].filter(Boolean);
     const t = ch.slice(i, j).join('');
-    const hOn = !ign[i] ? fm[i].h : '';
-    const dm = (fm[i].h === 'g' && fm[i].m && !o.pdf ? ` data-m="${esc(fm[i].m)}"` : '') + (fm[i].h === 'y' && fm[i].n && !o.pdf ? ` data-n="${esc(fm[i].n)}"` : '');
-    h += cls.length ? `<span class="${cls.join(' ')}"${dm}>${pieceHtml(t, hOn)}</span>` : pieceHtml(t, hOn);
-    if (fm[i].h === 'g' && fm[i].m && (j >= n || fm[j] !== fm[j - 1])) h += `<span class="hl-mean"${o.edit ? ' contenteditable="false"' : ''}>${esc(fm[i].m)}</span>`;
-    if (fm[i].h === 'y' && fm[i].n && (j >= n || fm[j] !== fm[j - 1])) h += `<span class="hl-note"${o.edit ? ' contenteditable="false"' : ''}>✎ ${esc(fm[i].n)}</span>`;
+    const dm = (hlAuto(hc) && fm[i].m && !o.pdf ? ` data-m="${esc(fm[i].m)}"` : '') + (hlNote(hc) && fm[i].n && !o.pdf ? ` data-n="${esc(fm[i].n)}"` : '');
+    h += cls.length ? `<span class="${cls.join(' ')}"${dm}>${pieceHtml(t, ig ? '' : hc)}</span>` : pieceHtml(t, hc);
+    if (hlAuto(hc) && fm[i].m && (j >= n || fm[j] !== fm[j - 1])) h += `<span class="hl-mean"${o.edit ? ' contenteditable="false"' : ''}>${esc(fm[i].m)}</span>`;
+    if (hlNote(hc) && fm[i].n && (j >= n || fm[j] !== fm[j - 1])) h += `<span class="hl-note"${o.edit ? ' contenteditable="false"' : ''}>✎ ${esc(fm[i].n)}</span>`;
     i = j;
   }
-  if (arrowAt >= 0 && !arrowDone && !o.edit) h = h.replace(/(<span class="td-right)/, '<span class="td-arrow">→</span>$1');
   return h;
 }
 function docViewHtml(D) {
   const lines = docLines(D);
   return lines.map(rs => { const h = tdLine(rs); return h ? `<div class="td-l">${h}</div>` : '<div class="td-l td-gap"></div>'; }).join('');
 }
+// new words typed as 中文 + English (outside any symbol rule), for the PDF tables
 function talkSort(items) {
   const words = [], seen = new Set();
   const addWord = (w, mean) => { w = w.trim(); if (!w || seen.has(w)) return; seen.add(w); words.push({ w, mean: (mean || '').trim() }); };
   for (const t of items) {
     if (t.kind === 'word') { addWord(t.said, t.fix); continue; }
-    if (t.kind !== 'doc') continue;
-    for (const line of String(t.said || '').split('\n')) for (const part of line.split(/(\[[^\]\n]*\]|[(（][^)）\n]*[)）])/)) if (!/^\[.*\]$|^[(（].*[)）]$/.test(part)) for (const x of tdWords(part)) addWord(x.w, x.mean);
+    if (t.kind !== 'doc' || !WORD_RULE.on) continue;
+    for (const line of String(t.said || '').split('\n')) { const ch = line.split(''); const { cov, del } = symScan(ch); for (const x of tdWords(ch.map((c, i) => cov[i] || del[i] ? ' ' : c).join(''))) addWord(x.w, x.mean); }
   }
   return { words };
 }
@@ -1109,11 +1125,11 @@ function wbPos(ed, node, off) {   // {line, ch} for a point inside the whiteboar
   const box = document.createElement('div'); box.appendChild(pre.cloneContents()); $$(WB_SKIP, box).forEach(x => x.remove());
   return { line: [...ed.childNodes].indexOf(line), ch: box.textContent.length };
 }
-function wbNoteOf(wb) { const ed = $('#tkDoc'); if (!ed) return ''; let at = 0; for (const r of edLines(ed)[wb.a.line] || []) { if (at + r.t.length > wb.a.ch && r.h === 'y') return r.n || ''; at += r.t.length; } return ''; }
+function wbNoteOf(wb) { const ed = $('#tkDoc'); if (!ed) return ''; let at = 0; for (const r of edLines(ed)[wb.a.line] || []) { if (at + r.t.length > wb.a.ch && hlNote(r.h)) return r.n || ''; at += r.t.length; } return ''; }
 function wbSetNote(wb, note) {     // the 一般畫記 explanation, kept on the marked words
   const ed = $('#tkDoc'); if (!ed) return; const lines = edLines(ed);
   for (let li = wb.a.line; li <= wb.b.line && li < lines.length; li++) { let at = 0; const from = li === wb.a.line ? wb.a.ch : 0, to = li === wb.b.line ? wb.b.ch : 1e9;
-    for (const r of lines[li]) { const s0 = at; at += r.t.length; if (r.h === 'y' && at > from && s0 < to) r.n = note; } }
+    for (const r of lines[li]) { const s0 = at; at += r.t.length; if (hlNote(r.h) && at > from && s0 < to) r.n = note; } }
   wbApply(ed, lines); saveTalkDoc(linesText(lines), linesHtml(lines));
 }
 function wbHighlight(wb, c) {        // colour (or clear) the text between wb.a and wb.b, then redraw and save
@@ -1126,7 +1142,7 @@ function wbHighlight(wb, c) {        // colour (or clear) the text between wb.a 
       const a = Math.max(s0, from), b = Math.min(e0, to);
       if (a >= b) { out.push(r); continue; }
       if (a > s0) out.push({ ...r, t: r.t.slice(0, a - s0) });
-      out.push({ ...r, t: r.t.slice(a - s0, b - s0), h: c, m: c === 'g' && r.h === 'g' ? r.m : '', n: c === 'y' && r.h === 'y' ? r.n : '' });
+      out.push({ ...r, t: r.t.slice(a - s0, b - s0), h: c, m: hlAuto(c) && r.h === c ? r.m : '', n: hlNote(c) && r.h === c ? r.n : '' });
       if (b < e0) out.push({ ...r, t: r.t.slice(b - s0) });
     }
     lines[li] = out;
@@ -1134,7 +1150,7 @@ function wbHighlight(wb, c) {        // colour (or clear) the text between wb.a 
   ed.innerHTML = wbHtml(lines); wbLock(ed);
   saveTalkDoc(linesText(lines), linesHtml(lines));
   toast(c ? `標記為 ${hlCat(c)[1]} Marked` : '已清除螢光筆 Highlight removed');
-  if (c === 'g') fillBoxMeanings(ed);
+  if (hlAuto(c)) fillBoxMeanings(ed);
 }
 let WB_T = null, WB_COMPOSING = false;
 function wbSchedule(ed) { clearTimeout(WB_T); WB_T = setTimeout(() => wbRedraw(ed), 650); }
@@ -1155,7 +1171,7 @@ function wbApply(ed, lines) {       // redraw the whiteboard from lines, keeping
    Data: each teacher's own pages and students. On claude.ai they are kept in the teacher's private
    space of this artifact's database (data/users/<id>); anywhere else they stay in this browser.
    ========================================================= */
-const HGW_VER = 'v1';
+const HGW_VER = 'v2';
 let CAN_WRITE = false, STUDENT = false, READY = false;
 const NOTE_NUM = new Map();
 let SAMPLE = null, DB = null, DL = null, USER_ID = null, MODE = 'local';
@@ -1191,6 +1207,7 @@ async function connect() {
     try { const s = await DB.collection('data/users/' + USER_ID).get(); for (const d of s.docs) DOCS.set(d.id, d.data()); MODE = 'cloud'; } catch (e) { MODE = 'local'; }
   }
   if (MODE === 'local') { const d = lsGet(DATA_LOCAL) || {}; for (const [k, v] of Object.entries(d)) DOCS.set(k, v); }
+  loadRules();
   const chip = $('#syncChip');
   chip.textContent = MODE === 'cloud' ? '☁ 存在你的帳號 Saved to your account' : '💾 存在這個瀏覽器 Saved in this browser';
   chip.title = MODE === 'cloud' ? 'Only you can see your pages and students.' : 'Your pages stay in this browser on this computer. Use ⚙ → Backup to keep a copy.';
@@ -1200,9 +1217,69 @@ async function connect() {
   render();
 }
 
+
+/* ---------------- the teacher's own rules: highlighters, symbols, PDF ---------------- */
+const PALETTE = [['#c4ecc4', '綠 green'], ['#ffcfd9', '粉 pink'], ['#c8e2f0', '藍 blue'], ['#ffe17a', '黃 yellow'], ['#e3d4f5', '紫 purple'], ['#ffd8b0', '橘 orange'], ['#cdeee6', '薄荷 mint'], ['#f0e0c8', '米 beige'], ['#e2e2e2', '灰 grey'], ['#f7c1c1', '紅 red']];
+const SYM_FX = [['grey', '淺灰（可以忽略）', 'light grey'], ['blue', '藍色粗體', 'blue bold'], ['red', '紅色刪除線', 'red strikethrough'], ['under', '橘色底線', 'orange underline'], ['green', '綠色', 'green'], ['orange', '橘色粗體', 'orange bold']];
+const SYM_FX_CSS = { grey: 'color:#a9a9a9', blue: 'color:#1d5fa8;font-weight:700', red: 'color:#c0392b;text-decoration:line-through;text-decoration-color:#c0392b', under: 'text-decoration:underline;text-decoration-color:#e67e22;text-decoration-thickness:2px', green: 'color:#2f8a55', orange: 'color:#c45400;font-weight:700' };
+const FW = { '(': '（', ')': '）', '[': '［', ']': '］', '{': '｛', '}': '｝', '<': '＜', '>': '＞', '*': '＊', '#': '＃', '~': '～', '/': '／', '|': '｜', '!': '！', '?': '？', '=': '＝', '+': '＋', '^': '＾', '@': '＠', '%': '％', '&': '＆', '$': '＄' };
+const DEF_RULES = () => ({
+  cats: [{ id: 'g', zh: '新生詞', en: 'New words', color: '#c4ecc4', auto: true, note: false }, { id: 'p', zh: '發音加強', en: 'Pronunciation', color: '#ffcfd9', auto: false, note: false },
+    { id: 'b', zh: '舊生詞忘記', en: 'Words to review', color: '#c8e2f0', auto: false, note: false }, { id: 'y', zh: '一般畫記', en: 'Highlights & notes', color: '#ffe17a', auto: false, note: true }],
+  syms: [{ id: 'ign', o: '(', c: ')', zh: '可以忽略', en: 'can be ignored', fx: 'grey', show: true, on: true }, { id: 'pos', o: '[', c: ']', zh: '放錯位置', en: 'wrong place', fx: 'blue', show: false, on: true }],
+  word: { on: true, cat: 'g' },
+  pdf: { title: '課後筆記', titleEn: 'Class notes', notes: true, en: true, off: [] }
+});
+let RULES = DEF_RULES(), SYMS = [], WORD_RULE = { on: true, cat: 'g' };
+const catOf = c => RULES.cats.find(x => x.id === c) || null;
+const hlAuto = c => !!(catOf(c) || {}).auto;
+const hlNote = c => !!(catOf(c) || {}).note;
+const cleanRules = r => {          // a rule set from storage or a file → a safe, complete one
+  const d = DEF_RULES(); if (!r || typeof r !== 'object') return d;
+  const okId = x => typeof x === 'string' && /^[a-z0-9]{1,8}$/.test(x) && !/^(mean|note|pick)$/.test(x);
+  const okCh = x => typeof x === 'string' && [...x].length === 1 && !/[\p{L}\p{N}\s]/u.test(x);
+  const okCol = x => typeof x === 'string' && /^#[0-9a-f]{6}$/i.test(x);
+  const cats = (Array.isArray(r.cats) ? r.cats : []).filter(c => c && okId(c.id) && String(c.zh || '').trim()).slice(0, 6).map(c => ({ id: c.id, zh: String(c.zh).trim().slice(0, 12), en: String(c.en || '').trim().slice(0, 30), color: okCol(c.color) ? c.color : '#ffe17a', auto: !!c.auto, note: !!c.note }));
+  const syms = (Array.isArray(r.syms) ? r.syms : []).filter(x => x && okId(x.id) && okCh(x.o) && okCh(x.c)).slice(0, 8).map(x => ({ id: x.id, o: x.o, c: x.c, zh: String(x.zh || '').trim().slice(0, 12), en: String(x.en || '').trim().slice(0, 30), fx: SYM_FX_CSS[x.fx] ? x.fx : 'grey', show: !!x.show, on: x.on !== false }));
+  const w = r.word && typeof r.word === 'object' ? r.word : d.word; const p = r.pdf && typeof r.pdf === 'object' ? r.pdf : d.pdf;
+  return { cats: cats.length ? cats : d.cats, syms: Array.isArray(r.syms) ? syms : d.syms, word: { on: w.on !== false, cat: String(w.cat || 'g') },
+    pdf: { title: String(p.title ?? d.pdf.title).slice(0, 30), titleEn: String(p.titleEn ?? d.pdf.titleEn).slice(0, 40), notes: p.notes !== false, en: p.en !== false, off: Array.isArray(p.off) ? p.off.filter(okId) : [] } };
+};
+function applyRules() {
+  const R = RULES;
+  HL_CATS = R.cats.map(c => [c.id, c.zh, c.en]); HL_HEX = Object.fromEntries(R.cats.map(c => [c.id, c.color]));
+  SYMS = R.syms.map(x => ({ ...x, o: [x.o, FW[x.o]].filter(Boolean), c: [x.c, FW[x.c]].filter(Boolean) }));
+  WORD_RULE = R.word;
+  let st = $('#ruleCss'); if (!st) { st = document.createElement('style'); st.id = 'ruleCss'; document.head.appendChild(st); }
+  st.textContent = R.cats.map(c => `.f-hl.hl-${c.id},.zh .hl-${c.id},mark.f-hl.hl-${c.id}{background:${c.color}!important}.zh .hl-${c.id}{color:var(--hl-ink)}.sw.${c.id},.qpill.hl-${c.id}{background:${c.color}}.pdf .hl-${c.id},.pdf .c.zy .hl-${c.id}{background:${c.color}!important}`).join('\n')
+    + '\n' + R.syms.map(x => { const v = SYM_FX_CSS[x.fx]; return `.sym-${x.id},.sym-${x.id} .h,.sym-${x.id} .t,.sym-${x.id} .w{${v}}${x.fx === 'grey' ? `.pdf .sym-${x.id} .r{color:#c4c4c4}` : ''}`; }).join('\n');
+  const m = $('#hlMenu'); if (m) m.innerHTML = HL_CATS.map(([c, zh, en]) => `<button class="swl" data-tdhl="${c}" title="${esc(en)}"><i class="sw ${c}"></i>${esc(zh)}</button>`).join('') + '<button class="swl" data-tdhl="" title="Remove the highlight"><i class="sw" style="background:transparent;border:1px dashed var(--muted)"></i>清除螢光筆</button>';
+}
+function loadRules() { RULES = cleanRules((DOCS.get('cfg_rules') || {}).rules); applyRules(); }
+function saveRules(r) { RULES = cleanRules(r); putDoc('cfg_rules', { rules: RULES, at: Date.now() }); applyRules(); }
+const symPair = x => `${esc(x.o)} ${esc(x.c)}`;
+function rulesHelpHtml() {          // the little guide under the whiteboard, from the teacher's own rules
+  const parts = [`🖍 ${RULES.cats.map(c => `<span class="f-hl hl-${c.id}" style="padding:0 4px;border-radius:3px">${esc(c.zh)}</span>`).join(' ')}`];
+  for (const x of RULES.syms.filter(x => x.on)) parts.push(`<span class="sym-${x.id}">${symPair(x)}</span> ${esc(x.zh)}${x.en ? ' ' + esc(x.en) : ''}`);
+  if (RULES.word.on) parts.push(`<span class="td-word">中文＋English</span> ${esc((catOf(RULES.word.cat) || RULES.cats[0]).zh)}，例 <span style="font-family:var(--zh)">機場 airport</span>`);
+  return parts.join(' &nbsp;·&nbsp; ');
+}
+async function exportRules() {
+  try { await saveFile(`highlighter-rules-${todayISO()}.json`, new Blob([JSON.stringify({ app: 'highlighter-gone-wild', kind: 'rules', ver: 1, rules: RULES }, null, 1)], { type: 'application/json' })); toast('規則存好了 Rules saved'); }
+  catch (e) { if (e?.code !== 'declined') toast('沒有存到 Couldn’t save'); }
+}
+async function importRules(file) {
+  try {
+    const d = JSON.parse(await file.text()); if (!d || d.kind !== 'rules' || !d.rules) throw new Error('no');
+    const r = cleanRules(d.rules);
+    if (!await askConfirm('匯入規則？ Import rules?', `換成這組規則：${r.cats.map(c => esc(c.zh)).join('、')}；符號 ${r.syms.map(x => symPair(x)).join('　') || '—'}。你現在的規則會被取代。 Your current rules will be replaced.`, 'Import')) return;
+    saveRules(r); toast('規則換好了 Rules imported'); render();
+  } catch (e) { toast('這不是規則檔 That isn’t a rules file'); }
+}
+
 /* ---------------- students & pages ---------------- */
 const STU_MODES = [['none', '不用學生', 'No students — just open a page'], ['name', '簡單版', 'Type the student’s name; pages are kept by date'], ['full', '完整版', 'Student background, so Claude can write example sentences about their life']];
-const stuMode = () => UI.stuMode || 'name';
+const stuMode = () => UI.stuMode || 'full';
 const students = () => docsOf('stu').sort((a, b) => a.name.localeCompare(b.name));
 const stuOf = id => (id && DOCS.get(id)) ? { id, ...DOCS.get(id) } : null;
 function dayFor(tz) { try { return new Intl.DateTimeFormat('en-CA', { year: 'numeric', month: '2-digit', day: '2-digit', timeZone: tz || undefined }).format(new Date()); } catch (e) { return todayISO(); } }
@@ -1250,7 +1327,7 @@ function renderSide() {
     h += `<div class="lesson hgw-pg${p.id === UI.page ? ' on' : ''}" data-page="${p.id}"><div class="hgw-pn">${p.name ? `<b>${esc(p.name)}</b> · ` : ''}<span>${esc(first.slice(0, 22))}</span></div><button class="ghost hgw-del" data-delpage="${p.id}" title="Delete this page" aria-label="Delete">✕</button></div>`;
   }
   if (!list.length) h += `<p class="status" style="padding:8px 12px">還沒有任何一頁 No pages yet.</p>`;
-  h += `<div class="side-foot"><button class="ghost" data-act="help">怎麼用 How to use</button><button class="ghost" data-act="settings">⚙ 設定 Settings</button>${sm === 'full' ? '<button class="ghost" data-act="stus">學生資料 Students</button>' : ''}<div class="hgw-credit">螢光筆暴走 ${HGW_VER} · Made by 小嵐 Learn with Blue<br>Dictionary: <a href="https://www.mdbg.net/chinese/dictionary?page=cc-cedict" target="_blank" rel="noopener">CC-CEDICT</a> (CC BY-SA 4.0) · Pinyin: pinyin-pro (MIT)</div></div>`;
+  h += `<div class="side-foot"><button class="ghost" data-act="help">怎麼用 How to use</button><button class="ghost" data-act="settings">⚙ 設定 Settings</button>${sm !== 'none' ? '<button class="ghost" data-act="stus">👤 學生資料 Students</button>' : ''}<div class="hgw-credit">螢光筆暴走 ${HGW_VER} · Made by 小嵐 Learn with Blue<br>Dictionary: <a href="https://www.mdbg.net/chinese/dictionary?page=cc-cedict" target="_blank" rel="noopener">CC-CEDICT</a> (CC BY-SA 4.0) · Pinyin: pinyin-pro (MIT)</div></div>`;
   side.innerHTML = h;
 }
 function render() {
@@ -1264,7 +1341,7 @@ function render() {
   const ed0 = $('#tkDoc'); if (ed0 && document.activeElement === ed0 && curPage()) { wbApply(ed0, edLines(ed0)); return; }
   const sm = stuMode(); const P = curPage();
   let h = '';
-  if (sm !== 'none') h += `<div class="card hgw-stu"><label for="stuIn"><b>學生 Student</b></label><input id="stuIn" list="stuList" placeholder="輸入學生名字 Type the student’s name" autocomplete="off"><datalist id="stuList">${students().map(s => `<option value="${esc(s.name)}">`).join('')}</datalist><button class="primary" data-act="stustart">開始上課 Start</button></div>`;
+  if (sm !== 'none') h += `<div class="card hgw-stu"><label for="stuIn"><b>學生 Student</b></label><input id="stuIn" list="stuList" placeholder="輸入學生名字 Type the student’s name" autocomplete="off"><datalist id="stuList">${students().map(s => `<option value="${esc(s.name)}">`).join('')}</datalist><button class="primary" data-act="stustart">開始上課 Start</button><button data-act="stus">👤 學生資料 Students</button></div>`;
   if (!P) {
     h += `<div class="empty"><div class="big">🖍 螢光筆暴走</div><p>${sm === 'none' ? '開一頁新的白板，就可以開始上課。 Open a new page to start.' : '輸入學生名字，按「開始上課」。 Type the student’s name and press Start.'}</p>${sm === 'none' ? '<button class="primary" data-act="newpage">＋ 新的一頁 New page</button>' : ''}<p class="status" style="margin-top:14px">第一次用？按左下角的「怎麼用 How to use」。</p></div>`;
     inner.innerHTML = h; $('#crumb').textContent = ''; return;
@@ -1272,42 +1349,110 @@ function render() {
   const st = stuOf(P.sid);
   $('#crumb').textContent = `${P.name || ''}${P.name ? ' · ' : ''}${P.date || ''}`;
   h += `<div class="card td-card">
-      <div class="td-head"><b style="font-family:var(--zh)">${P.name ? esc(P.name) + ' · ' : ''}${esc(P.date || '')}</b>${st && st.tz ? `<span class="status">${esc(st.tz)}</span>` : ''}<span class="spacer"></span><span class="status" id="tdSaved">${P.said ? '已儲存 Saved' : ''}</span></div>
+      <div class="td-head"><b style="font-family:var(--zh)">${P.name ? esc(P.name) + ' · ' : ''}${esc(P.date || '')}</b>${st && st.tz ? `<span class="status">${esc(st.tz)}</span>` : ''}${st ? `<button class="ghost" data-act="stus" style="font-size:13px;padding:2px 8px">✎ ${esc(st.name)} 的資料</button>` : ''}<span class="spacer"></span><span class="status" id="tdSaved">${P.said ? '已儲存 Saved' : ''}</span></div>
       <div id="tkDoc" class="td-ed td-wb rt" data-rtkey="tkDoc" contenteditable="true" spellcheck="false" role="textbox" aria-multiline="true" aria-label="Whiteboard" data-ph="開始打字… Start typing what the student says…">${wbHtml(docLines(P))}</div>
-      <p class="status td-help">🖍 選取或點一下字詞，標記 新生詞／發音加強／舊生詞忘記／一般畫記 &nbsp;·&nbsp; <span class="f-m">[ ]</span> 放錯位置 wrong place，例 <span style="font-family:var(--zh)">我[昨天]去了</span> &nbsp;·&nbsp; <span class="td-ign">( )</span> 可以忽略 can be ignored，例 <span style="font-family:var(--zh)">我(覺得)很好</span> &nbsp;·&nbsp; <span class="td-word">中文＋English</span> 直接寫成新生詞，例 <span style="font-family:var(--zh)">機場 airport</span></p>
+      <p class="status td-help">${rulesHelpHtml()}</p>
     </div>`;
   inner.innerHTML = h;
   { const wb = $('#tkDoc'); if (wb) wbLock(wb); }
 }
 
 /* ---------------- dialogs ---------------- */
-function settingsDialog() {
-  const sm = stuMode();
-  const bg = modal(`<div class="modal sm"><div class="mh">⚙ 設定 Settings</div><div class="mb">
-    <div class="field"><label>學生模式 Students</label>${STU_MODES.map(([v, zh, en]) => `<label class="chk" style="display:flex;gap:8px;align-items:flex-start;margin:6px 0"><input type="radio" name="sm" value="${v}" ${sm === v ? 'checked' : ''}><span><b>${zh}</b><br><span class="status">${en}</span></span></label>`).join('')}</div>
-    <div class="field"><label for="sigIn">PDF 署名 Your name or brand on the PDF</label><input id="sigIn" value="${esc(UI.sig || '')}" placeholder="例如 王老師華語 / Ms. Wang Mandarin"></div>
-    <div class="field"><label>PDF 間距 Spacing (pt)</label><div style="display:flex;gap:10px;flex-wrap:wrap">
-      <label class="status">拼音距漢字 <input type="number" step="0.5" min="0" max="12" id="gPy" value="${UI.gapPy ?? 1}" style="width:64px"></label>
-      <label class="status">注音距漢字 <input type="number" step="0.5" min="0" max="12" id="gZy" value="${UI.gapZy ?? 1.5}" style="width:64px"></label>
-      <label class="status">行距 Line gap <input type="number" step="1" min="0" max="30" id="gLn" value="${UI.gapLine ?? 5}" style="width:64px"></label></div></div>
-    <div class="field"><label>資料 Data</label><div style="display:flex;gap:8px;flex-wrap:wrap"><button data-act="backup">⬇ 下載備份 Backup</button><button data-act="restore">⬆ 還原備份 Restore</button></div></div>
-  </div><div class="mf"><button data-close>Cancel</button><button class="primary" id="setOk">Save</button></div></div>`);
-  bg.querySelector('#setOk').onclick = () => {
-    UI.stuMode = bg.querySelector('input[name=sm]:checked')?.value || 'name'; UI.sig = bg.querySelector('#sigIn').value.trim();
-    const num = (s, d) => { const v = parseFloat(bg.querySelector(s).value); return isFinite(v) ? v : d; };
-    UI.gapPy = num('#gPy', 1); UI.gapZy = num('#gZy', 1.5); UI.gapLine = num('#gLn', 5);
-    saveUI(); closeModal(); render();
+function settingsDialog(tab) {
+  const W = { rules: JSON.parse(JSON.stringify(RULES)), sm: stuMode(), sig: UI.sig || '', gapPy: UI.gapPy ?? 1, gapZy: UI.gapZy ?? 1.5, gapLine: UI.gapLine ?? 5 };
+  let cur = tab || 'gen';
+  const TABS = [['gen', '一般 General'], ['hl', '🖍 螢光筆 Highlighters'], ['sym', '符號 Symbols'], ['pdf', 'PDF']];
+  const bg = modal(`<div class="modal"><div class="mh">⚙ 設定 Settings</div><div class="set-tabs" id="setTabs"></div><div class="mb" id="setBody"></div><div class="mf"><button data-close>Cancel</button><button class="primary" id="setOk">儲存 Save</button></div></div>`);
+  const nid = p => p + Math.random().toString(36).slice(2, 5).replace(/[^a-z0-9]/g, 'x');
+  const chk = (attr, on, label) => `<label class="chk set-chk"><input type="checkbox" ${attr} ${on ? 'checked' : ''}> ${label}</label>`;
+  const draw = () => {
+    $('#setTabs').innerHTML = TABS.map(([k, l]) => `<button class="${cur === k ? 'on' : ''}" data-settab="${k}">${l}</button>`).join('');
+    const R = W.rules; let h = '';
+    if (cur === 'gen') {
+      h += `<div class="field"><label>學生模式 Students</label>${STU_MODES.map(([v, zh, en]) => `<label class="chk" style="display:flex;gap:8px;align-items:flex-start;margin:6px 0"><input type="radio" name="sm" value="${v}" ${W.sm === v ? 'checked' : ''}><span><b>${zh}</b><br><span class="status">${en}</span></span></label>`).join('')}</div>
+        <div class="field"><label>規則 Rules <span class="status">— 把你的螢光筆、符號、PDF 設定存成檔案，分享給別的老師 Share your rules with other teachers</span></label><div class="set-btns"><button data-act="rulesout">⬇ 匯出規則 Export rules</button><button data-act="rulesin">⬆ 匯入規則 Import rules</button><button data-setreset>↺ 恢復預設 Default rules</button></div></div>
+        <div class="field"><label>資料 Data</label><div class="set-btns"><button data-act="backup">⬇ 下載備份 Backup</button><button data-act="restore">⬆ 還原備份 Restore</button></div></div>`;
+    } else if (cur === 'hl') {
+      h += `<p class="status" style="margin-top:0">最多 6 種。名稱也是 PDF 表格的標題。 Up to 6; the name is also the table title in the PDF.</p>`;
+      R.cats.forEach((c, i) => {
+        h += `<div class="set-row" data-ci="${i}"><div class="set-line"><i class="sw" style="background:${c.color};width:22px;height:22px"></i><input data-cf="zh" value="${esc(c.zh)}" placeholder="中文名稱" style="flex:1;min-width:90px"><input data-cf="en" value="${esc(c.en)}" placeholder="English" style="flex:1;min-width:90px"><button class="ghost" data-cup="${i}" ${i ? '' : 'disabled'} title="Move up">↑</button><button class="ghost" data-cdel="${i}" ${R.cats.length > 1 ? '' : 'disabled'} title="Delete">✕</button></div>
+          <div class="set-line">${PALETTE.map(([col, nm]) => `<button class="set-col${c.color === col ? ' on' : ''}" data-ccol="${i}|${col}" title="${nm}" style="background:${col}"></button>`).join('')}<span class="spacer"></span>${chk(`data-cf="auto"`, c.auto, '自動配英文 Auto meaning')}${chk(`data-cf="note"`, c.note, '可寫說明 Teacher note')}</div></div>`;
+      });
+      if (R.cats.length < 6) h += `<button data-cadd>＋ 新增螢光筆 Add a highlighter</button>`;
+    } else if (cur === 'sym') {
+      h += `<p class="status" style="margin-top:0">左右符號各一個字，例如 ( )、[ ]、{ }、< >、* *。全形的（ ）［ ］也算。 One character on each side; full-width versions count too.</p>`;
+      R.syms.forEach((x, i) => {
+        h += `<div class="set-row" data-si="${i}"><div class="set-line"><input data-sf="o" value="${esc(x.o)}" maxlength="2" class="set-ch" aria-label="Left symbol"><span class="status">…</span><input data-sf="c" value="${esc(x.c)}" maxlength="2" class="set-ch" aria-label="Right symbol"><input data-sf="zh" value="${esc(x.zh)}" placeholder="意思 Name" style="flex:1;min-width:90px"><input data-sf="en" value="${esc(x.en)}" placeholder="English" style="flex:1;min-width:90px"><button class="ghost" data-sdel="${i}" title="Delete">✕</button></div>
+          <div class="set-line"><select data-sf="fx">${SYM_FX.map(([v, zh, en]) => `<option value="${v}" ${x.fx === v ? 'selected' : ''}>${zh} ${en}</option>`).join('')}</select><span class="sym-${x.id} set-demo" style="${SYM_FX_CSS[x.fx]}">${esc(x.o)}範例 example${esc(x.c)}</span><span class="spacer"></span>${chk(`data-sf="show"`, x.show, 'PDF 顯示符號 Show symbols')}${chk(`data-sf="on"`, x.on, '開啟 On')}</div></div>`;
+      });
+      if (R.syms.length < 8) h += `<button data-sadd>＋ 新增符號規則 Add a symbol rule</button>`;
+      h += `<div class="set-row"><div class="set-line">${chk(`data-wf="on"`, R.word.on, '<b>中文後面打英文＝標記成</b> Chinese + English marks it as')}<select data-wf="cat">${R.cats.map(c => `<option value="${c.id}" ${R.word.cat === c.id ? 'selected' : ''}>${esc(c.zh)}</option>`).join('')}</select></div><p class="status" style="margin:4px 0 0">例 機場 airport（最多 4 個字，要在一行開頭或標點後面 up to 4 characters, after punctuation）</p></div>`;
+    } else {
+      h += `<div class="field"><label>PDF 標題 Title</label><div class="set-line"><input data-pf="title" value="${esc(R.pdf.title)}" placeholder="課後筆記" style="flex:1"><input data-pf="titleEn" value="${esc(R.pdf.titleEn)}" placeholder="Class notes" style="flex:1"></div></div>
+        <div class="field"><label>放進 PDF 的表格 Tables in the PDF</label><div class="set-line" style="flex-wrap:wrap">${R.cats.map(c => chk(`data-poff="${c.id}"`, !R.pdf.off.includes(c.id), `<span class="f-hl hl-${c.id}" style="background:${c.color};padding:0 5px;border-radius:3px">${esc(c.zh)}</span>`)).join('')}</div><p class="status" style="margin:4px 0 0">順序跟螢光筆的順序一樣。 Same order as your highlighters.</p></div>
+        <div class="field">${chk(`data-pf="notes"`, R.pdf.notes, '今日筆記 Today’s notes')}${chk(`data-pf="en"`, R.pdf.en, '顯示英文小字 English labels')}</div>
+        <div class="field"><label for="sigIn">PDF 署名 Your name or brand on the PDF</label><input id="sigIn" data-gf="sig" value="${esc(W.sig)}" placeholder="例如 王老師華語 / Ms. Wang Mandarin"></div>
+        <div class="field"><label>間距 Spacing (pt)</label><div class="set-line" style="flex-wrap:wrap">
+          <label class="status">拼音距漢字 <input type="number" step="0.5" min="0" max="12" data-gf="gapPy" value="${W.gapPy}" style="width:64px"></label>
+          <label class="status">注音距漢字 <input type="number" step="0.5" min="0" max="12" data-gf="gapZy" value="${W.gapZy}" style="width:64px"></label>
+          <label class="status">行距 Line gap <input type="number" step="1" min="0" max="30" data-gf="gapLine" value="${W.gapLine}" style="width:64px"></label></div></div>`;
+    }
+    $('#setBody').innerHTML = h;
   };
+  const onEdit = e => {
+    const el = e.target, v = el.type === 'checkbox' ? el.checked : el.value, R = W.rules;
+    if (el.name === 'sm') { W.sm = el.value; return; }
+    const ci = el.closest('[data-ci]'), si = el.closest('[data-si]');
+    if (el.dataset.cf && ci) { R.cats[+ci.dataset.ci][el.dataset.cf] = v; return; }
+    if (el.dataset.sf && si) { const x = R.syms[+si.dataset.si]; x[el.dataset.sf] = typeof v === 'string' && /^[oc]$/.test(el.dataset.sf) ? v.trim() : v; if (el.dataset.sf === 'fx' || el.dataset.sf === 'o' || el.dataset.sf === 'c') { const d = si.querySelector('.set-demo'); if (d) { d.style.cssText = SYM_FX_CSS[x.fx]; d.textContent = `${x.o}範例 example${x.c}`; } } return; }
+    if (el.dataset.wf) { R.word[el.dataset.wf] = v; return; }
+    if (el.dataset.pf) { R.pdf[el.dataset.pf] = v; return; }
+    if (el.dataset.poff) { const id = el.dataset.poff; R.pdf.off = R.pdf.off.filter(x => x !== id); if (!v) R.pdf.off.push(id); return; }
+    if (el.dataset.gf) { W[el.dataset.gf] = el.dataset.gf === 'sig' ? v : parseFloat(v); return; }
+  };
+  bg.addEventListener('input', onEdit); bg.addEventListener('change', onEdit);
+  bg.addEventListener('click', async e => {
+    const t = e.target, R = W.rules; let b;
+    if ((b = t.closest('[data-settab]'))) { cur = b.dataset.settab; draw(); return; }
+    if ((b = t.closest('[data-ccol]'))) { const [i, col] = b.dataset.ccol.split('|'); R.cats[+i].color = col; draw(); return; }
+    if ((b = t.closest('[data-cup]'))) { const i = +b.dataset.cup; [R.cats[i - 1], R.cats[i]] = [R.cats[i], R.cats[i - 1]]; draw(); return; }
+    if ((b = t.closest('[data-cdel]'))) { const i = +b.dataset.cdel; if (await askConfirm('刪除這個螢光筆？ Delete highlighter?', `刪除「${esc(R.cats[i].zh)}」？已經畫過的字會變回一般文字。 Words already marked with it become plain.`, 'Delete', true)) R.cats.splice(i, 1); return settingsDialogBack(); }
+    if (t.closest('[data-cadd]')) { const used = R.cats.map(c => c.color); R.cats.push({ id: nid('k'), zh: '', en: '', color: (PALETTE.find(p => !used.includes(p[0])) || PALETTE[0])[0], auto: false, note: false }); draw(); $$('#setBody [data-cf="zh"]').pop()?.focus(); return; }
+    if ((b = t.closest('[data-sdel]'))) { R.syms.splice(+b.dataset.sdel, 1); draw(); return; }
+    if (t.closest('[data-sadd]')) { R.syms.push({ id: nid('s'), o: '{', c: '}', zh: '', en: '', fx: 'blue', show: true, on: true }); draw(); return; }
+    if (t.closest('[data-setreset]')) { W.rules = DEF_RULES(); draw(); toast('已換回預設規則，按「儲存」才會生效 Press Save to keep it'); return; }
+  });
+  // the delete confirmation replaces this dialog: open it again with the same work in progress
+  const settingsDialogBack = () => { const keep = W; settingsDialog(cur); SET_RESUME(keep); };
+  SET_RESUME = keep => { Object.assign(W, keep); draw(); };
+  bg.querySelector('#setOk').onclick = () => {
+    const R = W.rules, errs = [];
+    R.cats.forEach((c, i) => { c.zh = String(c.zh || '').trim(); if (!c.zh) errs.push(`螢光筆第 ${i + 1} 個沒有名字 Highlighter ${i + 1} needs a name`); });
+    const okCh = x => [...String(x || '')].length === 1 && !/[\p{L}\p{N}\s]/u.test(x);
+    const seen = new Map();
+    R.syms.forEach((x, i) => {
+      if (!okCh(x.o) || !okCh(x.c)) errs.push(`符號規則第 ${i + 1} 條：左右各一個符號（不能是字或數字） Rule ${i + 1}: one symbol on each side`);
+      for (const ch of new Set([x.o, x.c, FW[x.o], FW[x.c]].filter(Boolean))) { if (seen.has(ch) && seen.get(ch) !== i) errs.push(`「${ch}」用在兩條規則裡 “${ch}” is used by two rules`); seen.set(ch, i); }
+      x.zh = String(x.zh || '').trim();
+    });
+    if (errs.length) return toast([...new Set(errs)][0]);
+    if (!R.cats.some(c => c.id === R.word.cat)) R.word.cat = (R.cats.find(c => c.auto) || R.cats[0]).id;
+    UI.stuMode = W.sm; UI.sig = String(W.sig || '').trim();
+    UI.gapPy = isFinite(W.gapPy) ? W.gapPy : 1; UI.gapZy = isFinite(W.gapZy) ? W.gapZy : 1.5; UI.gapLine = isFinite(W.gapLine) ? W.gapLine : 5;
+    saveUI(); saveRules(R); closeModal(); render(); toast('設定存好了 Settings saved');
+  };
+  draw();
 }
+let SET_RESUME = () => {};
 const STU_FIELDS = [['name', '名字 Name'], ['level', '程度 Level', '例如 初級 A2 / HSK 3'], ['from', '國家、住在哪裡 From / lives', ''], ['work', '工作或學校 Work or study', ''], ['family', '家人 Family', ''], ['hobbies', '興趣 Hobbies', ''], ['goals', '為什麼學中文 Why learning Chinese', ''], ['notes', '其他 Notes', '']];
 function studentsDialog(sel) {
   const list = students(); const cur = (sel && stuOf(sel)) || list[0] || null;
   let tzs = []; try { tzs = Intl.supportedValuesOf('timeZone'); } catch (e) {}
   const bg = modal(`<div class="modal"><div class="mh">學生資料 Students</div><div class="mb hgw-stus">
     <div class="hgw-stul">${list.map(s => `<button class="${cur && s.id === cur.id ? 'primary' : 'ghost'}" data-stusel="${s.id}">${esc(s.name)}</button>`).join('') || '<p class="status">還沒有學生 No students yet.</p>'}<button data-stuadd>＋ 新增 Add</button></div>
-    ${cur ? `<div class="hgw-stuf">${STU_FIELDS.map(([k, lab, ph]) => `<div class="field"><label>${lab}</label>${k === 'name' || k === 'level' ? `<input data-sf="${k}" value="${esc(cur[k] || '')}" placeholder="${esc(ph || '')}">` : `<textarea rows="2" data-sf="${k}" placeholder="${esc(ph || '')}">${esc(cur[k] || '')}</textarea>`}</div>`).join('')}
+    ${cur ? `<div class="hgw-stuf">${STU_FIELDS.filter(([k]) => stuMode() === 'full' || k === 'name').map(([k, lab, ph]) => `<div class="field"><label>${lab}</label>${k === 'name' || k === 'level' ? `<input data-sf="${k}" value="${esc(cur[k] || '')}" placeholder="${esc(ph || '')}">` : `<textarea rows="2" data-sf="${k}" placeholder="${esc(ph || '')}">${esc(cur[k] || '')}</textarea>`}</div>`).join('')}
       <div class="field"><label>時區 Time zone（PDF 的日期用學生當地日期）</label><input data-sf="tz" list="tzList" value="${esc(cur.tz || '')}" placeholder="例如 Asia/Taipei"><datalist id="tzList">${tzs.map(z => `<option value="${z}">`).join('')}</datalist></div>
-      <p class="status">Claude 會依這些資料，幫新生詞寫跟學生生活有關的例句。 Claude uses this to write example sentences about the student’s life.</p>
+      <p class="status">${stuMode() !== 'full' ? '想填學生背景（工作、興趣…），到 ⚙ 設定 選「完整版」。 Choose 完整版 in ⚙ Settings to add a background.' : SAMPLE ? 'Claude 會依這些資料，幫新生詞寫跟學生生活有關的例句。 Claude uses this to write example sentences about the student’s life.' : '依學生背景寫例句需要 claude.ai 版；這裡的背景資料可以當你自己的備忘。 Example sentences need the claude.ai version.'}</p>
       <button class="ghost" data-studel="${cur.id}" style="color:var(--bad)">刪除這位學生 Delete student</button></div>` : ''}
   </div><div class="mf"><button class="primary" data-close>完成 Done</button></div></div>`);
   bg.addEventListener('input', e => { const k = e.target.dataset.sf; if (!k || !cur) return; const D = DOCS.get(cur.id); D[k] = e.target.value; D.at = Date.now(); putDoc(cur.id, D); if (k === 'name') renderSide(); });
@@ -1320,12 +1465,13 @@ function studentsDialog(sel) {
 function helpDialog() {
   modal(`<div class="modal"><div class="mh">🖍 怎麼用 How to use</div><div class="mb hgw-help">
     <p><b>1. 開始上課</b>　輸入學生名字按「開始上課」（或按「＋ 新的一頁」）。學生說話時，直接在白板上打字，停一下就會出現拼音或注音（上面可以切換 Off／Pinyin／注音、繁／簡、字的大小）。</p>
-    <p><b>2. 螢光筆四種顏色</b>　選取字詞（或點一下一個詞），選一種顏色：</p>
+    <p><b>2. 螢光筆</b>　選取字詞（或點一下一個詞），選一種顏色：</p>
     <p>${HL_CATS.map(([c, zh, en]) => `<span class="f-hl hl-${c}" style="padding:1px 6px;border-radius:4px">${zh}</span> <span class="status">${en}</span>`).join('　')}</p>
-    <p>標成<b>新生詞</b>，系統會自動配上英文意思${'（在 claude.ai 上用 Claude 依照句子挑最適合的意思）'}。<b>一般畫記</b>可以寫你的說明。</p>
-    <p><b>3. 三個小規則</b><br>• <span class="f-m">[ ]</span> 放錯位置的部分：我[昨天]去了<br>• <span class="td-ign">( )</span> 可以忽略的部分，PDF 會變淺灰：我(覺得)很好<br>• 中文後面直接打英文，就是新生詞：機場 airport</p>
+    <p>${RULES.cats.some(c => c.auto) ? `標成${RULES.cats.filter(c => c.auto).map(c => `<b>${esc(c.zh)}</b>`).join('、')}，會自動配上英文意思${SAMPLE ? '（Claude 會依照句子挑最適合的意思）' : ''}。` : ''}${RULES.cats.some(c => c.note) ? `${RULES.cats.filter(c => c.note).map(c => `<b>${esc(c.zh)}</b>`).join('、')}可以寫你的說明。` : ''}</p>
+    <p><b>3. 符號規則</b><br>${RULES.syms.filter(x => x.on).map(x => `• <span class="sym-${x.id}">${esc(x.o)}…${esc(x.c)}</span> ${esc(x.zh)}${x.en ? ' ' + esc(x.en) : ''}${x.show ? '' : '（PDF 不顯示符號）'}`).join('<br>') || '（沒有開啟的規則）'}${RULES.word.on ? `<br>• 中文後面直接打英文，就是${esc((catOf(RULES.word.cat) || RULES.cats[0]).zh)}：機場 airport` : ''}</p>
+    <p class="status">螢光筆、符號和 PDF 都可以在 ⚙ 設定 改成你自己的規則，也可以匯出給別的老師。 You can change all of these in ⚙ Settings.</p>
     <p><b>4. 點詞查字典</b>　點白板上的詞，會出現拼音、注音和英文解釋，🔊 可以朗讀。</p>
-    <p><b>5. 匯出 PDF</b>　按右上角 Export PDF。PDF 會依顏色分成表格（新生詞、忘記的舊生詞、發音加強、重點），加上今天的筆記。檔名是「日期 學生名字」。</p>
+    <p><b>5. 匯出 PDF</b>　按右上角 Export PDF。PDF 會依螢光筆分成表格（${RULES.cats.map(c => esc(c.zh)).join('、')}），加上今天的筆記。檔名是「日期 學生名字」。</p>
     <p class="status">${MODE === 'cloud' ? '你的資料存在你的 claude.ai 帳號，只有你看得到。' : '你的資料存在這個瀏覽器。換電腦前請到 ⚙ 設定 → 下載備份。'}</p>
   </div><div class="mf"><button class="primary" data-close>好 OK</button></div></div>`);
 }
@@ -1341,24 +1487,24 @@ async function restore(file) {
   try {
     const d = JSON.parse(await file.text()); const docs = d && d.docs; if (!docs || typeof docs !== 'object') throw new Error('not a backup');
     if (!await askConfirm('還原備份？ Restore?', `加入備份裡的 ${Object.keys(docs).length} 筆資料（同一筆會被備份蓋過）。 Adds the pages and students from the backup.`, 'Restore')) return;
-    for (const [k, v] of Object.entries(docs)) if (/^(page|stu|ex)_[\w-]+$/.test(k) && v && typeof v === 'object') putDoc(k, v);
-    toast('還原好了 Restored'); render();
+    for (const [k, v] of Object.entries(docs)) if (/^(page|stu|ex|cfg)_[\w-]+$/.test(k) && v && typeof v === 'object') putDoc(k, v);
+    loadRules(); toast('還原好了 Restored'); render();
   } catch (e) { toast('這不是備份檔 That isn’t a backup file'); }
 }
 
 /* ---------------- PDF ---------------- */
 function exportDialog() {
   const P = curPage(); if (!P) return toast('先打開一頁 Open a page first');
-  const st = stuOf(P.sid); const canEx = stuMode() === 'full' && st && SAMPLE;
+  const st = stuOf(P.sid); const canEx = stuMode() === 'full' && st && SAMPLE && RULES.cats.some(c => c.auto);
   const bg = modal(`<div class="modal sm"><div class="mh">匯出 PDF Export PDF</div><div class="mb">
-    <label class="chk"><input type="checkbox" id="exList" checked> 重點表格 Key word tables（新生詞／忘記的舊生詞／發音加強／重點）</label>
-    <label class="chk"><input type="checkbox" id="exNotes" checked> 今日筆記 Today’s notes</label>
+    <div class="field" style="margin:0 0 6px"><label>重點表格 Tables</label><div class="set-line" style="flex-wrap:wrap">${RULES.cats.map(c => `<label class="chk set-chk"><input type="checkbox" data-excat="${c.id}" ${RULES.pdf.off.includes(c.id) ? '' : 'checked'}> <span class="f-hl hl-${c.id}" style="padding:0 5px;border-radius:3px">${esc(c.zh)}</span></label>`).join('')}</div></div>
+    <label class="chk"><input type="checkbox" id="exNotes" ${RULES.pdf.notes ? 'checked' : ''}> 今日筆記 Today’s notes</label>
     <label class="chk"><input type="checkbox" id="exPy" ${UI.py !== 'off' ? 'checked' : ''}> ${UI.py === 'zy' ? '注音' : '拼音 Pinyin'}</label>
-    ${canEx ? `<label class="chk"><input type="checkbox" id="exEx" checked> 新生詞例句 Example sentences about ${esc(st.name)}’s life (Claude)</label>` : ''}
+    ${canEx ? `<label class="chk"><input type="checkbox" id="exEx" checked> ${esc(RULES.cats.filter(c => c.auto).map(c => c.zh).join('、'))}例句 Example sentences about ${esc(st.name)}’s life (Claude)</label>` : ''}
     <div class="field" style="margin-top:10px"><label for="exName">學生名字 Student (file name)</label><input id="exName" value="${esc(P.name || '')}"></div>
     <p class="status">間距可以在 ⚙ 設定 調整。 Spacing is in ⚙ Settings.</p>
   </div><div class="mf"><button data-close>Cancel</button><button class="primary" id="exGo">匯出 Export</button></div></div>`);
-  bg.querySelector('#exGo').onclick = () => { const o = { list: $('#exList').checked, notes: $('#exNotes').checked, py: $('#exPy').checked, ex: !!$('#exEx')?.checked, name: $('#exName').value.trim() }; closeModal(); doExport(o); };
+  bg.querySelector('#exGo').onclick = () => { const o = { cats: $$('[data-excat]').filter(x => x.checked).map(x => x.dataset.excat), notes: $('#exNotes').checked, py: $('#exPy').checked, ex: !!$('#exEx')?.checked, name: $('#exName').value.trim() }; closeModal(); doExport(o); };
 }
 async function wordExamples(st, words) {
   words = [...new Set(words)]; if (!words.length || !SAMPLE) return {};
@@ -1386,21 +1532,23 @@ async function doExport(o) {
   let date; try { date = new Date().toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric', timeZone: (st && st.tz) || undefined }); } catch (e) { date = new Date().toLocaleDateString(); }
   const dayISO = P.date || dayFor(st && st.tz);
   const name = o.name || P.name || '';
-  let body = `<div class="hd"><div><div class="bk">${esc(UI.sig || '')}</div><h1>${esc(zhDisp('課後筆記'))} <span style="font-size:15px;color:#888;font-weight:400">Class notes</span></h1></div><div class="meta">${name ? esc(name) + '<br>' : ''}${esc(date)}</div></div>`;
+  const EN = t => RULES.pdf.en ? (t || '') : '';
+  const wcat = (catOf(RULES.word.cat) || RULES.cats.find(c => c.auto) || RULES.cats[0]).id;
+  let body = `<div class="hd"><div><div class="bk">${esc(UI.sig || '')}</div><h1>${esc(zhDisp(RULES.pdf.title || '課後筆記'))}${EN(RULES.pdf.titleEn) ? ` <span style="font-size:15px;color:#888;font-weight:400">${esc(RULES.pdf.titleEn)}</span>` : ''}</h1></div><div class="meta">${name ? esc(name) + '<br>' : ''}${esc(date)}</div></div>`;
   const items = [];
   for (const rs of docLines(P)) {
-    for (let k = 0; k < rs.length;) { const c = rs[k].h; if (!c) { k++; continue; } let t = '', m = '', nt = ''; while (k < rs.length && rs[k].h === c) { t += rs[k].t; m = m || rs[k].m || ''; nt = nt || rs[k].n || ''; k++; } t = t.trim(); if (t) items.push({ t, c, mean: c === 'g' && m ? m : phraseMeaning(t), note: nt ? esc(nt) : '' }); }
+    for (let k = 0; k < rs.length;) { const c = rs[k].h; if (!c) { k++; continue; } let t = '', m = '', nt = ''; while (k < rs.length && rs[k].h === c) { t += rs[k].t; m = m || rs[k].m || ''; nt = nt || rs[k].n || ''; k++; } t = t.trim(); if (t) items.push({ t, c, mean: hlAuto(c) && m ? m : phraseMeaning(t), note: nt ? esc(nt) : '' }); }
   }
-  for (const x of talkSort([{ kind: 'doc', said: P.said }]).words) items.push({ t: x.w, c: 'g', mean: x.mean || phraseMeaning(x.w), note: '' });
+  for (const x of talkSort([{ kind: 'doc', said: P.said }]).words) items.push({ t: x.w, c: wcat, mean: x.mean || phraseMeaning(x.w), note: '' });
   const seen = new Set(); const uniq = items.filter(x => { const key = x.c + '|' + x.t; if (seen.has(key)) return false; seen.add(key); return true; });
-  const exFor = o.ex && st ? await wordExamples(st, uniq.filter(x => x.c === 'g').map(x => x.t)) : {};
-  if (o.list && uniq.length) {
-    const SECS = [['g', '新生詞', 'New words'], ['b', '忘記的舊生詞', 'Words to review'], ['p', '發音加強', 'Pronunciation practice'], ['y', '重點', 'Highlights & notes']];
-    body += `<h2>重點 Key words</h2>`;
+  const exFor = o.ex && st ? await wordExamples(st, uniq.filter(x => hlAuto(x.c)).map(x => x.t)) : {};
+  const SECS = RULES.cats.filter(c => o.cats.includes(c.id)).map(c => [c.id, c.zh, c.en]);
+  if (SECS.length && uniq.some(x => o.cats.includes(x.c))) {
+    body += `<h2>重點${EN(' Key words')}</h2>`;
     for (const [c, zh, en] of SECS) {
       const list = uniq.filter(x => x.c === c); if (!list.length) continue;
-      const hasNote = list.some(x => x.note), hasEx = c === 'g' && list.some(x => exFor[x.t]);
-      body += `<div class="qsh"><span class="qpill hl-${c}">${zh}</span><span class="en">${en} · ${list.length}</span></div><table><thead><tr><th>#</th><th>中文</th><th>Meaning</th>${hasEx ? '<th>例句 Example</th>' : ''}${hasNote ? '<th>Note</th>' : ''}</tr></thead><tbody>`;
+      const hasNote = list.some(x => x.note), hasEx = hlAuto(c) && list.some(x => exFor[x.t]);
+      body += `<div class="qsh"><span class="qpill hl-${c}">${esc(zh)}</span><span class="en">${EN(en) ? esc(en) + ' · ' : ''}${list.length}</span></div><table><thead><tr><th>#</th><th>中文</th><th>${RULES.pdf.en ? 'Meaning' : '意思'}</th>${hasEx ? `<th>例句${EN(' Example')}</th>` : ''}${hasNote ? `<th>${RULES.pdf.en ? 'Note' : '說明'}</th>` : ''}</tr></thead><tbody>`;
       list.forEach((x, i) => { const ex = hasEx ? exFor[x.t] : null;
         body += `<tr><td class="n">${i + 1}</td><td class="z">${pdfZh(x.t, '', o.py, [])}</td><td>${esc(x.mean || '')}</td>${hasEx ? `<td class="exs">${ex ? `${pdfZh(exPunct(ex.zh), '', o.py, [])}<div class="exen">${esc(ex.en || '')}</div>` : ''}</td>` : ''}${hasNote ? `<td class="nt">${x.note}</td>` : ''}</tr>`; });
       body += '</tbody></table>';
@@ -1408,7 +1556,7 @@ async function doExport(o) {
   }
   if (o.notes) {
     const noteHtml = docLines(P).map(rs => tdLine(rs, { pdf: true, py: o.py })).filter(Boolean);
-    if (noteHtml.length) body += `<div class="qsh">今日筆記 <span class="en">Today’s notes</span></div><div class="box">${noteHtml.map(h => `<div class="para tdp">${h}</div>`).join('')}</div>`;
+    if (noteHtml.length) body += `<div class="qsh">今日筆記 <span class="en">${EN('Today’s notes')}</span></div><div class="box">${noteHtml.map(h => `<div class="para tdp">${h}</div>`).join('')}</div>`;
   }
   if (UI.sig) body += `<div class="wm">${esc(UI.sig)}</div>`;
   body += `<div class="foot">${name ? esc(name) + ' · ' : ''}${esc(date)} · 螢光筆暴走 Highlighter Gone Wild</div>`;
@@ -1507,7 +1655,7 @@ document.addEventListener('click', e => {
   document.execCommand('hiliteColor', false, b.dataset.tdhl ? HL_HEX[b.dataset.tdhl] : 'transparent');
   document.execCommand('styleWithCSS', false, false);
   box.dispatchEvent(new Event('input', { bubbles: true }));
-  if (b.dataset.tdhl === 'g') setTimeout(() => fillBoxMeanings(box), 700);
+  if (hlAuto(b.dataset.tdhl)) setTimeout(() => fillBoxMeanings(box), 700);
 });
 let LAST_RT = null;
 document.addEventListener('focusin', e => { const r = e.target.closest && e.target.closest('.rt'); if (r) LAST_RT = r; });
@@ -1537,14 +1685,14 @@ document.addEventListener('click', async e => {
   if (pa && POP) {
     const act = pa.dataset.pop;
     if (act === 'say') speak(POP.word);
-    if (act === 'wbhl') { const info = POP; wbHighlight(info.wb, pa.dataset.c); closePop(); if (pa.dataset.c === 'y') { const r = pa.getBoundingClientRect(); openPop({ left: r.left, right: r.right, top: r.top - 60, bottom: r.top - 40, width: r.width, height: 20 }, { ...info, wbCur: 'y', wbNote: wbNoteOf(info.wb) }); setTimeout(() => $('#wbNote')?.focus(), 0); } }
+    if (act === 'wbhl') { const info = POP; wbHighlight(info.wb, pa.dataset.c); closePop(); if (hlNote(pa.dataset.c)) { const r = pa.getBoundingClientRect(); openPop({ left: r.left, right: r.right, top: r.top - 60, bottom: r.top - 40, width: r.width, height: 20 }, { ...info, wbCur: 'y', wbNote: wbNoteOf(info.wb) }); setTimeout(() => $('#wbNote')?.focus(), 0); } }
     return;
   }
   if (t.closest('.pop')) return;
   const w = t.closest('.zh .w');
   if (w && !skipClick && t.closest('#tkDoc')) {
     const ed = $('#tkDoc'); const r = document.createRange(); r.selectNodeContents(w);
-    openPop(w.getBoundingClientRect(), { k: '', word: w.dataset.w, py: w.dataset.py, wb: { a: wbPos(ed, r.startContainer, r.startOffset), b: wbPos(ed, r.endContainer, r.endOffset) }, wbCur: w.closest('.f-hl')?.className.match(/hl-([ygpb])/)?.[1] || '' });
+    openPop(w.getBoundingClientRect(), { k: '', word: w.dataset.w, py: w.dataset.py, wb: { a: wbPos(ed, r.startContainer, r.startOffset), b: wbPos(ed, r.endContainer, r.endOffset) }, wbCur: w.closest('.f-hl')?.className.match(/\bhl-(?!mean\b|note\b)([a-z0-9]+)/)?.[1] || '' });
     return;
   }
   { const d = t.closest('[data-delpage]'); if (d) { const id = d.dataset.delpage; if (await askConfirm('刪除這一頁？ Delete page?', '刪除後就找不回來了。 This can’t be undone.', 'Delete', true)) { putDoc(id, null); if (UI.page === id) UI.page = null; saveUI(); render(); } return; } }
@@ -1557,9 +1705,12 @@ document.addEventListener('click', async e => {
   if (act === 'help') return helpDialog();
   if (act === 'backup') return backup();
   if (act === 'restore') return $('#fileIn').click();
+  if (act === 'rulesout') return exportRules();
+  if (act === 'rulesin') return $('#ruleIn').click();
 });
 document.addEventListener('keydown', e => { if (e.target && e.target.id === 'stuIn' && e.key === 'Enter') startWith(e.target.value); });
 document.addEventListener('change', e => { if (e.target.id === 'stuFilter') { UI.filter = e.target.value; saveUI(); renderSide(); } });
+$('#ruleIn').onchange = e => { const f = e.target.files[0]; e.target.value = ''; if (f) importRules(f); };
 $('#fileIn').onchange = e => { const f = e.target.files[0]; e.target.value = ''; if (f) restore(f); };
 $('#zhsMode').onclick = async e => { const v = e.target.closest('[data-v]')?.dataset.v; if (!v) return; UI.zhs = v === 's'; saveUI(); if (UI.zhs) await loadZhs(); PY_CACHE.clear(); render(); };
 $('#pyMode').onclick = e => { const v = e.target.closest('[data-v]')?.dataset.v; if (!v) return; UI.py = v; saveUI(); PY_CACHE.clear(); render(); };
@@ -1569,6 +1720,7 @@ $('#btnSide').onclick = () => { UI.side = UI.side === false; saveUI(); renderSid
 $('#btnExport').onclick = exportDialog;
 
 /* ---------------- start ---------------- */
+applyRules();
 if (UI.zhs) loadZhs().then(ok => { if (ok) { PY_CACHE.clear(); render(); } });
 render();
 loadDict();
