@@ -1,0 +1,1579 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>螢光筆暴走 Highlighter Gone Wild</title>
+<meta name="description" content="A class whiteboard for Mandarin teachers: live pinyin / 注音, four highlighter colours, a dictionary, and a tidy PDF for the student.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🖍%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}
+
+/* Layout: one-screen app — quiet top bar, lesson sidebar, reading column with section tabs.
+   Minimal: sky blue #7BAFC8 for actions, light yellow paper, hairlines instead of boxes. */
+:root{
+  --bg:#F6F2E8; --paper:#ffffff; --sunk:#efe9da; --ink:#24343c; --muted:#76838a; --line:#e6dfcd;
+  --accent:#7BAFC8; --accent-ink:#11303f; --accent-text:#3a7590; --accent-soft:#e7f1f6; --py:#5a8fa8;
+  --ok:#2f8a55; --ok-soft:#e3f4e9; --bad:#c0463e; --bad-soft:#fbe6e3; --note:#fff5cf; --note-line:#e6c55a;
+  --hl-y:#ffe17a; --hl-g:#c4ecc4; --hl-p:#ffcfd9; --hl-b:#c8e2f0; --hl-ink:#1b1b1b;
+  --shadow:rgba(36,52,60,.10); --scrim:rgba(36,52,60,.35);
+  --fs:24px; --radius:14px;
+  --zh:"Noto Serif TC","Microsoft JhengHei","PingFang TC","Heiti TC",serif;
+  --ui:"Inter","Segoe UI","Microsoft JhengHei",system-ui,sans-serif;
+  --head:"Inter","Segoe UI",sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--ui);font-size:15px;display:flex;flex-direction:column}
+button{font:inherit;cursor:pointer;border:1px solid var(--line);background:var(--paper);color:var(--ink);border-radius:8px;padding:6px 12px}
+button:hover{border-color:var(--muted)}
+button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+button.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+button.primary:hover{filter:brightness(1.08)}
+button.ghost{border-color:transparent;background:transparent}
+button.ghost:hover{background:var(--sunk)}
+button:disabled{opacity:.45;cursor:default}
+input,textarea,select{font:inherit;color:var(--ink);background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:6px 10px}
+textarea{font-family:var(--zh);line-height:1.6}
+.spacer{flex:1}
+[data-ro] .rw{display:none!important}
+
+/* top bar */
+header{display:flex;align-items:center;gap:8px 10px;padding:10px 16px;background:var(--bg);border-bottom:1px solid var(--line);flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:8px;font-family:var(--head);font-weight:600;font-size:15px;letter-spacing:.2px}
+.brand .logo{width:34px;height:34px;display:block}
+.seal{width:28px;height:28px;border-radius:50%;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;font-family:var(--zh);font-size:17px}
+.crumb{color:var(--muted);font-family:var(--zh);font-size:16px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:9px;overflow:hidden;background:var(--paper)}
+.seg button{border:0;border-radius:0;padding:6px 11px;background:transparent}
+.seg button+button{border-left:1px solid var(--line)}
+.seg button.on{background:var(--accent);color:var(--accent-ink)}
+.badge{display:inline-block;min-width:18px;padding:0 6px;border-radius:9px;background:var(--accent);color:var(--accent-ink);font-size:12px;line-height:18px;text-align:center;margin-left:4px}
+.status{font-size:12px;color:var(--muted)}
+.chip-sync{font-size:12px;padding:3px 9px;border-radius:20px;background:var(--sunk);color:var(--muted);white-space:nowrap}
+.chip-sync.ok{background:var(--accent-soft);color:var(--accent-text)}
+
+/* layout */
+.wrap{flex:1;display:flex;min-height:0}
+.aud-bar{background:var(--paper);border-radius:14px;padding:10px 14px;margin:0 0 14px;box-shadow:0 1px 2px var(--shadow);display:flex;flex-direction:column;gap:6px}
+.aud-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.aud-lab{font-family:var(--zh);font-weight:600;color:var(--accent-text);white-space:nowrap}
+.aud-slot{flex:1;min-width:220px}.aud-slot audio{width:100%;height:36px;display:block}
+.aud-sync{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.aud-sync .status{flex:1}
+.cx-top{display:flex;align-items:center;gap:12px;margin-bottom:8px}.cx-time{font-variant-numeric:tabular-nums;font-weight:600;min-width:64px}
+.cx-all,.cx-zoom{width:100%;display:block;border-radius:10px;background:var(--sunk);cursor:pointer;touch-action:none}
+.cx-sel{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:12px 0 8px}.cx-num{color:#fff;border-radius:50%;width:26px;height:26px;display:grid;place-items:center;font-size:13px}
+.cx-text{font-family:var(--zh);font-size:18px;flex:1;min-width:160px}.cx-grp{display:inline-flex;align-items:center;gap:4px;font-variant-numeric:tabular-nums;background:var(--sunk);border-radius:9px;padding:2px 4px 2px 10px}
+.cx-list{max-height:30vh;overflow:auto;margin-top:10px}
+.as-row{display:flex;align-items:center;gap:10px;padding:7px 8px;border-radius:8px;cursor:pointer;border-bottom:1px solid var(--line)}
+.as-row.on{background:var(--accent-soft)}.as-n{width:22px;color:var(--muted);font-size:12px}.as-t{width:56px;font-variant-numeric:tabular-nums;color:var(--accent-text)}.as-s{flex:1;font-family:var(--zh)}
+.wsnav{display:flex;gap:4px;padding:6px 16px 0;border-bottom:1px solid var(--line);background:var(--bg);overflow-x:auto}
+.wsnav button{border:0;border-bottom:3px solid transparent;border-radius:0;background:transparent;padding:9px 16px;font-size:15px;color:var(--muted);white-space:nowrap;font-family:var(--zh)}
+.wsnav button small{font-family:var(--ui);font-size:11px;margin-left:6px;opacity:.8}
+.wsnav button.on{border-bottom-color:var(--accent);color:var(--accent-text);font-weight:600}
+body.ws-page #side,body.ws-page #btnSide,body.ws-page #crumb,body.ws-page #fmtBar,body.ws-page #btnNotes,body.ws-page #btnExport,body.ws-page #stuChip{display:none!important}
+.st-filter{display:flex;gap:6px;flex-wrap:wrap;margin:4px 0 12px}
+.st-filter button.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.st-badge{display:inline-block;font-size:12px;padding:2px 8px;border-radius:9px;font-weight:600;white-space:nowrap;font-family:var(--zh)}
+.st-badge.s0{background:color-mix(in srgb,var(--ok) 16%,transparent);color:var(--ok)}
+.st-badge.s1{background:color-mix(in srgb,#d08a00 18%,transparent);color:#b07400}
+.st-badge.s2{background:var(--line);color:var(--muted)}
+.st-badge.s3{background:var(--accent-soft);color:var(--accent-text)}
+table.lt tr.stopped td{opacity:.6}
+.fx-row{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;padding:8px 0;border-bottom:1px solid var(--line)}
+.fx-row:last-child{border-bottom:0}
+.fx-row .field{margin:0}
+.fx-row input{width:110px}
+.inc-big{font-size:30px;font-weight:700;font-variant-numeric:tabular-nums}
+aside.side{width:230px;flex:none;background:var(--bg);border-right:1px solid var(--line);overflow:auto;padding:12px 10px}
+aside.side.hide{display:none}
+.book>.bh{display:flex;align-items:center;gap:6px;padding:7px 8px;border-radius:8px;cursor:pointer;font-family:var(--zh);font-weight:600;font-size:16px}
+.book>.bh:hover{background:var(--sunk)}
+.book>.bh .cnt{margin-left:auto;font-family:var(--ui);font-size:12px;color:var(--muted);font-weight:400}
+.lessons{padding-left:10px;margin-bottom:6px}
+.lesson{padding:6px 10px;border-radius:7px;cursor:pointer;font-family:var(--zh);font-size:15px;display:flex;gap:6px;align-items:center}
+.lesson:hover{background:var(--sunk)}
+.lesson.on{background:var(--accent-soft);color:var(--accent-text);font-weight:600}
+.lesson .dot{width:7px;height:7px;border-radius:50%;background:var(--note-line);margin-left:auto;flex:none}
+.folder>.fh{display:flex;align-items:center;gap:6px;padding:7px 8px;border-radius:8px;cursor:pointer;font-family:var(--zh);font-weight:700;font-size:16px;color:var(--accent-text)}
+.folder>.fh:hover{background:var(--sunk)}
+.folder>.fh .cnt{margin-left:auto;font-family:var(--ui);font-size:12px;color:var(--muted);font-weight:400}
+.folder .fic{font-size:14px}
+.fbooks{padding-left:10px;border-left:1px solid var(--line);margin:0 0 6px 14px}
+.addl{font-size:13px;color:var(--muted);padding:6px 10px;cursor:pointer}
+.addl:hover{color:var(--accent-text)}
+.side-foot{border-top:1px solid var(--line);margin-top:12px;padding-top:10px;display:flex;flex-direction:column;gap:2px}
+.side-foot button{text-align:left}
+
+main{flex:1;overflow:auto;min-width:0}
+.inner{max-width:980px;margin:0 auto;padding:18px 24px 80px}
+.tabs{display:flex;gap:2px;border-bottom:1px solid var(--line);margin-bottom:18px;position:sticky;top:0;background:var(--bg);z-index:5;padding-top:4px}
+.tab{border:0;border-bottom:2px solid transparent;border-radius:0;background:transparent;padding:10px 14px;font-size:14px;color:var(--muted);white-space:nowrap}
+.tab .zht{font-family:var(--zh);font-size:17px;margin-right:6px;color:var(--ink)}
+.tab.on{border-bottom-color:var(--accent);color:var(--accent-text)}
+.tab.on .zht{color:var(--accent-text)}
+.tabs .tools{margin-left:auto;display:flex;gap:6px;align-items:center;padding-bottom:6px}
+.tabs{overflow-x:auto;overflow-y:hidden;scrollbar-width:thin}.tabs .tab{flex:none}.tabs .tools button{white-space:nowrap}.tabs .tools{position:sticky;right:0;background:var(--bg);padding-left:8px}
+.card{background:var(--paper);border:0;border-radius:var(--radius);padding:22px 26px;margin-bottom:16px;box-shadow:0 1px 2px var(--shadow)}
+.lesson-title{font-family:var(--zh);font-size:28px;font-weight:600;margin:4px 0 16px;text-wrap:balance}
+.empty{text-align:center;color:var(--muted);padding:56px 20px}
+.empty .big{font-family:var(--zh);font-size:22px;color:var(--ink);margin-bottom:8px}
+h3.sec{font-family:var(--zh);font-size:19px;margin:22px 0 10px;color:var(--accent-text)}
+.banner{background:var(--note);border:1px solid var(--note-line);border-radius:10px;padding:10px 14px;margin-bottom:14px;font-size:14px}
+
+/* Chinese text */
+.zh{font-family:var(--zh);font-size:var(--fs);line-height:2.25}
+body.py-off .zh{line-height:1.9}
+.zh ruby{ruby-position:over}
+.zh rt{font-family:var(--ui);font-size:.42em;color:var(--py);letter-spacing:0;user-select:none;-webkit-user-select:none}
+body.py-zy .zh rt{font-family:"Microsoft JhengHei","PingFang TC",sans-serif;font-size:.36em}
+.zc{display:inline-flex;align-items:center}
+.zv{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;position:relative;font-family:"Microsoft JhengHei","PingFang TC",sans-serif;font-size:.4em;line-height:1.02;color:var(--py);margin:0 .15em 0 .06em;user-select:none;-webkit-user-select:none}
+.zv.tm{margin-right:.85em}
+.zv b{font-weight:400}
+.zv i{font-style:normal}
+.zv .zm{position:absolute;left:100%;top:50%;transform:translate(.05em,-55%)}
+.zv .zn{line-height:.55}
+body.py-zy .zh{line-height:2.1}
+body.py-off .zh rt{display:none}
+.zh .w{cursor:pointer;border-radius:4px;padding:0 1px;transition:background .12s}
+.zh .w:hover{background:var(--sunk);box-shadow:inset 0 -2px 0 var(--accent)}
+.zh .hl-y,.zh .hl-g,.zh .hl-p,.zh .hl-b{color:var(--hl-ink)}
+.zh .hl-y rt,.zh .hl-g rt,.zh .hl-p rt,.zh .hl-b rt{color:#7a4510}
+.zh .hl-y{background:var(--hl-y)!important}.zh .hl-g{background:var(--hl-g)!important}
+.zh .hl-p{background:var(--hl-p)!important}.zh .hl-b{background:var(--hl-b)!important}
+.nm{font-family:var(--ui);font-size:11px;font-weight:700;background:var(--note-line);color:#1b1b1b;border-radius:8px;padding:1px 5px;margin:0 2px;cursor:pointer;vertical-align:super;line-height:1}
+.flash{animation:flash 1.4s}
+@keyframes flash{0%,40%{box-shadow:0 0 0 4px var(--accent);border-radius:6px}100%{box-shadow:none}}
+.para{display:flex;gap:12px;align-items:flex-start;padding:4px 0}
+.para .spk{flex:none;width:64px;display:flex;flex-direction:column;align-items:center;gap:3px;padding-top:4px}
+.av{width:48px;height:48px;border-radius:50%;object-fit:cover;background:var(--accent-soft);flex:none}
+.av.ini{display:grid;place-items:center;font-family:var(--zh);font-size:20px;font-weight:600;color:var(--accent-text)}
+.spk .sn{font-family:var(--zh);font-size:12px;color:var(--muted);text-align:center;max-width:64px;line-height:1.2;word-break:break-all}
+.drop{display:flex;align-items:center;justify-content:center;min-height:130px;border:2px dashed var(--line);border-radius:14px;background:var(--sunk);color:var(--muted);cursor:pointer;text-align:center;padding:16px}
+.drop.over{border-color:var(--accent);background:var(--accent-soft)}
+.thumbs{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
+.thumbs .th{position:relative}.thumbs img{height:120px;border-radius:8px;border:1px solid var(--line);display:block}
+.thumbs button{position:absolute;top:4px;right:4px;background:var(--paper);padding:2px 7px}
+.shot-grid{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:16px}
+.shot-cv{width:100%;border-radius:8px;border:1px solid var(--line);touch-action:none;cursor:crosshair;display:block}
+.srow{display:flex;gap:10px;align-items:center;padding:8px;border-radius:10px;border:2px solid transparent;cursor:pointer}
+.srow.on{border-color:var(--accent);background:var(--accent-soft)}
+.srow canvas,.srow img{width:52px;height:52px;border-radius:50%;flex:none;background:var(--sunk);object-fit:cover}
+.srow input[type=text]{width:100%;min-width:0;font-family:var(--zh)}
+.srow .sd{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px;font-size:12px}
+@media (max-width:760px){.shot-grid{grid-template-columns:1fr}}
+.ro{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0 2px;padding:8px;border-radius:12px;background:var(--sunk);border:2px dashed transparent;min-height:56px}
+.ro.ok{border-color:var(--ok);background:var(--ok-soft)}.ro.no{border-color:var(--bad);background:var(--bad-soft)}
+.ro .tl{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:4px 10px;cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none;box-shadow:0 1px 2px var(--shadow)}
+.ro .tl .zh{font-size:calc(var(--fs)*.85);line-height:1.9}.ro .tl .w{cursor:grab}
+.ro .tl.dragging{cursor:grabbing;position:relative;z-index:20;box-shadow:0 8px 20px var(--shadow);border-color:var(--accent)}
+.bal{color:var(--ok);font-weight:600}
+.tk{display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--line)}
+.tk:last-child{border-bottom:0}
+.tk-k{flex:none;width:96px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);padding-top:10px}
+.tk-mistake .tk-k{color:var(--bad)}.tk-good .tk-k{color:var(--ok)}.tk-word .tk-k{color:var(--accent-text)}
+.tk-said .zh{font-size:calc(var(--fs)*.85)}
+.tk-mistake .tk-said .zh{text-decoration:line-through;text-decoration-color:var(--bad);text-decoration-thickness:1px}
+.tk-fix{color:var(--ok)}.tk-fix .zh{font-size:calc(var(--fs)*.85)}.tk-arrow{font-weight:700}
+ (max-width:760px){.tk-k{width:70px}}
+.fest-bar{display:flex;gap:12px;align-items:flex-start;background:#fff7d6;border:1px solid #f0dc8f;border-radius:14px;padding:10px 14px;margin-bottom:12px}
+.fest-row+.fest-row{margin-top:8px;padding-top:8px;border-top:1px dashed #ead9a0}
+.fest-seal{flex:none;width:30px;height:30px;border-radius:8px;background:#c8463a;color:#fff;display:inline-grid;place-items:center;font-family:var(--zh);font-weight:700;font-size:16px}
+.linkish{border:0;background:none;padding:0 4px;color:var(--accent-text);text-decoration:underline;font-size:13px}
+.fest-sec{font-size:12px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);margin:16px 0 6px}
+.fest-words{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px}
+.fw{display:flex;flex-direction:column;background:var(--sunk);border-radius:10px;padding:8px 10px;position:relative}
+.fw .vw .zh{font-size:22px;line-height:1.9}.fw .say{position:absolute;right:4px;top:4px;padding:2px 6px}
+.fest-cal{display:flex;gap:12px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}
+.fest-cal .fd{width:58px;flex:none;font-weight:700;font-size:17px;display:flex;flex-direction:column;font-variant-numeric:tabular-nums}
+.spk.pick{cursor:pointer;border-radius:10px;padding:4px 2px}
+.spk.pick:hover{background:var(--sunk)}
+.av.add{border:2px dashed var(--line);background:transparent;color:var(--muted);display:grid;place-items:center;font-size:18px}
+.spk.empty{opacity:.5}.para:hover .spk.empty{opacity:1}
+.spk-opts{display:grid;grid-template-columns:repeat(auto-fill,minmax(86px,1fr));gap:6px;margin-top:10px;max-height:260px;overflow:auto}
+.spk-opt{display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 4px;border-radius:10px;font-family:var(--zh);font-size:13px}
+.spk-opt .av{width:40px;height:40px}.spk-opt .av.ini{font-size:17px}
+.spk-opt.on{border-color:var(--accent);background:var(--accent-soft)}
+.oa{display:flex;flex-direction:column;gap:6px;margin:8px 0 4px}
+.oa-said{width:100%;font-family:var(--zh);font-size:calc(var(--fs)*.7);min-height:44px}
+.oa-fix{width:100%;font-family:var(--zh);font-size:calc(var(--fs)*.65);border-color:var(--ok);color:var(--ok);min-height:38px}
+.oa-fix::placeholder{color:var(--muted)}
+.lesson .done{margin-left:auto;color:var(--ok);font-weight:700;font-family:var(--ui)}
+.gimg-add{float:right;font-size:13px;padding:3px 8px;margin:-6px -8px 0 8px}
+.gimg{margin:12px 0;text-align:center}
+.gimg img{max-width:100%;max-height:420px;border-radius:12px;box-shadow:0 1px 3px var(--shadow)}
+.gimg figcaption{font-size:14px;color:var(--muted);margin-top:6px}
+.gimg-x{font-size:12px;padding:2px 8px;display:block;margin:4px auto 0;color:var(--muted)}
+.sv{background:var(--paper);border-radius:14px;box-shadow:0 1px 2px var(--shadow);overflow:hidden}
+.sv-stage{display:flex;align-items:center;justify-content:center;background:#1d2428;min-height:240px;aspect-ratio:16/9;max-width:100%}
+.sv-stage canvas,.sv-stage img{max-width:100%;max-height:100%;display:block;object-fit:contain}
+.sv-bar{display:flex;align-items:center;gap:10px;padding:8px 12px;border-top:1px solid var(--line)}
+.sv:fullscreen{display:flex;flex-direction:column;border-radius:0;background:#000}
+.sv:fullscreen .sv-stage{flex:1;aspect-ratio:auto;min-height:0}
+.sv:fullscreen .sv-bar{background:var(--paper)}
+#langSel{padding:5px 8px;font-size:13px;max-width:120px}
+.chip-stu{display:inline-flex;align-items:center;gap:6px;border-radius:20px;padding:3px 10px 3px 4px;background:var(--accent-soft);border-color:transparent;font-family:var(--zh);font-weight:600}
+.chip-stu .status{font-family:var(--ui);font-weight:400}
+.side-foot button.on{background:var(--accent-soft);color:var(--accent-text)}
+.log-head{display:flex;align-items:flex-end;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.log-month{display:flex;align-items:center;gap:8px;margin:6px 0 14px;font-size:16px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}
+.tile2{background:var(--paper);border-radius:14px;padding:14px 16px;box-shadow:0 1px 2px var(--shadow)}
+.tile2 .k{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+.tile2 .v{font-size:24px;font-weight:600;margin-top:4px;font-variant-numeric:tabular-nums}
+.tile2.warn .v{color:var(--bad)}
+.lt{width:100%;border-collapse:collapse;font-size:14px;font-variant-numeric:tabular-nums}
+.lt th{text-align:left;font-size:12px;color:var(--muted);font-weight:600;padding:8px 6px;border-bottom:1px solid var(--line)}
+.lt td{padding:8px 6px;border-bottom:1px solid var(--line);vertical-align:top}
+.lt tr:last-child td{border-bottom:0}
+.due{color:var(--bad);font-weight:600}
+.start-bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:10px 14px;margin-bottom:12px}
+.start-bar.on{background:var(--accent-soft);border-color:transparent}
+.prac-bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;background:var(--accent-soft);border-color:transparent}
+.drill.prac{border-top:2px dashed var(--accent);background:linear-gradient(var(--paper),var(--paper))}
+.drill.prac .drill-h{color:var(--accent-text)}
+.bk-t{width:100%;border-collapse:collapse;margin-bottom:10px}.bk-t th{text-align:left;font-size:12px;color:var(--muted);font-weight:600;padding:4px 6px}.bk-t td{padding:4px 6px;border-top:1px solid var(--line)}
+.bk-t td:nth-child(2){width:100%}
+.para .say{flex:none;opacity:.25;padding:2px 6px;margin-top:calc(var(--fs)*.45)}
+.para:hover .say{opacity:1}
+.para .zh{flex:1;min-width:0}
+.thead{font-family:var(--zh);font-weight:700;color:var(--accent-text);font-size:calc(var(--fs)*.85);margin:16px 0 4px}
+
+/* popover */
+.pop{position:fixed;z-index:50;width:340px;max-width:calc(100vw - 20px);background:var(--paper);border:1px solid var(--line);border-radius:14px;box-shadow:0 14px 40px var(--shadow);padding:14px 16px}
+.pop .ph{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.pop .pz{font-family:var(--zh);font-size:30px;font-weight:700}
+.pop .pp{color:var(--py);font-size:16px}
+.pop .pzy{color:var(--py);font-size:14px;font-family:"Microsoft JhengHei","PingFang TC",sans-serif}
+.pop .defs{margin:8px 0 4px;font-size:14px;line-height:1.5;max-height:150px;overflow:auto}
+.pop .defs .src{font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-top:4px}
+.pop .defs .pyl{color:var(--py);font-weight:600;margin-right:4px}
+.pop .chars{font-size:13px;color:var(--muted);border-top:1px dashed var(--line);padding-top:6px;margin-top:6px}
+.pop .chars b{font-family:var(--zh);color:var(--ink);font-size:15px}
+.pop .row{display:flex;align-items:center;gap:8px;margin-top:10px}
+.sw{width:26px;height:26px;border-radius:50%;border:2px solid var(--paper);box-shadow:0 0 0 1px var(--line);cursor:pointer;padding:0}
+.sw.on{box-shadow:0 0 0 2px var(--ink)}
+.sw.y{background:var(--hl-y)}.sw.g{background:var(--hl-g)}.sw.p{background:var(--hl-p)}.sw.b{background:var(--hl-b)}
+.pop textarea{width:100%;margin-top:8px;font-family:var(--ui);font-size:14px;resize:vertical;min-height:54px}
+.pop .phrase{font-family:var(--zh);font-size:15px;background:var(--sunk);border-radius:6px;padding:4px 8px;margin-top:8px}
+.pop .foot{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+.pop .foot button{font-size:13px;padding:4px 9px}
+.tag{display:inline-block;font-size:11px;padding:1px 7px;border-radius:9px;background:var(--accent-soft);color:var(--accent-text);font-weight:600}
+
+/* vocab */
+.vbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+.vgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
+.vc{background:var(--paper);border:1px solid transparent;box-shadow:0 1px 2px var(--shadow);border-radius:12px;padding:12px 14px;position:relative}
+.vc .vw{font-family:var(--zh);font-size:calc(var(--fs)*1.1);font-weight:700;line-height:1.3}
+.vc .vw .zh{font-size:inherit;line-height:1.3}
+.vc .vp{color:var(--py);font-size:15px}
+.vc .ve{font-size:14px;margin-top:4px}
+.vc .pos{font-size:11px;color:var(--muted);border:1px solid var(--line);border-radius:5px;padding:0 5px;margin-left:4px}
+.vc .say{position:absolute;right:8px;top:8px;padding:2px 7px}
+.vc .num{position:absolute;right:12px;bottom:8px;font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
+.game{background:var(--paper);border:0;box-shadow:0 1px 2px var(--shadow);border-radius:16px;padding:24px 16px;text-align:center}
+.fc{perspective:1000px;width:min(520px,100%);height:280px;margin:10px auto 18px;cursor:pointer}
+.fc-in{position:relative;width:100%;height:100%;transition:transform .45s;transform-style:preserve-3d}
+.fc.flip .fc-in{transform:rotateY(180deg)}
+.fc-f,.fc-b{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:16px;border:1px solid var(--line);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;background:var(--paper);box-shadow:0 6px 20px var(--shadow)}
+.fc-b{transform:rotateY(180deg);background:var(--sunk)}
+.fc .big{font-family:var(--zh);font-size:64px;font-weight:700}
+.fc .mid{font-size:26px;color:var(--py);margin-top:6px}
+.fc .en{font-size:22px;margin-top:8px}
+.fc .hint{position:absolute;bottom:10px;font-size:12px;color:var(--muted)}
+.gctl{display:flex;gap:8px;justify-content:center;align-items:center;flex-wrap:wrap}
+.prog{font-size:13px;color:var(--muted);margin-bottom:6px;font-variant-numeric:tabular-nums}
+.mgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;max-width:640px;margin:14px auto}
+.mcol{display:flex;flex-direction:column;gap:10px;min-width:0}
+.tile{flex-direction:column;gap:2px;padding:14px 10px;border-radius:12px;border:2px solid var(--line);background:var(--paper);font-size:16px;min-height:58px;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.tile.zht{font-family:var(--zh);font-size:26px;font-weight:600}
+.tile.sel{border-color:var(--accent);background:var(--accent-soft)}
+.tile.done{border-color:var(--ok);background:var(--ok-soft);opacity:.45;pointer-events:none}
+.tile.wrong{border-color:var(--bad);background:var(--bad-soft);animation:shake .35s}
+@keyframes shake{25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+.qz-prompt{font-family:var(--zh);font-size:54px;font-weight:700;margin:16px 0 4px}
+.qz-prompt.en{font-family:var(--ui);font-size:28px;font-weight:600}
+.qz-opts{display:grid;grid-template-columns:1fr 1fr;gap:10px;max-width:600px;margin:18px auto}
+.qz-opts button{padding:16px 10px;font-size:17px;border-width:2px;border-radius:12px;min-height:62px}
+.qz-opts button.zht{font-family:var(--zh);font-size:26px}
+.gpy{display:block;font-family:var(--ui);font-size:13px;font-weight:400;color:var(--py)}
+.qz-opts button.right{border-color:var(--ok);background:var(--ok-soft)}
+.qz-opts button.bad{border-color:var(--bad);background:var(--bad-soft)}
+.score{font-family:var(--head);font-size:48px;font-weight:700;color:var(--accent-text);margin:10px 0}
+
+/* questions */
+.q{display:flex;gap:12px;padding:12px 0;border-bottom:1px dashed var(--line)}
+.q:last-child{border-bottom:0}
+.qn{flex:none;width:30px;height:30px;border-radius:50%;background:var(--accent-soft);color:var(--accent-text);display:grid;place-items:center;font-weight:700;font-size:14px;margin-top:calc(var(--fs)*.5)}
+.qb{flex:1;min-width:0}
+.opts{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0}
+.opts button{font-family:var(--zh);font-size:calc(var(--fs)*.8);border-width:2px;border-radius:10px;padding:6px 14px}
+.opts button.right{border-color:var(--ok);background:var(--ok-soft)}
+.opts button.bad{border-color:var(--bad);background:var(--bad-soft)}
+.ans{background:var(--ok-soft);border-radius:10px;padding:2px 12px;margin-top:6px;border-left:4px solid var(--ok)}
+.ans .zh{font-size:calc(var(--fs)*.9)}
+.reveal{font-size:13px;padding:3px 10px;margin-top:4px}
+.qsec{margin-bottom:24px}
+.qsec-h{display:flex;align-items:center;gap:10px;margin:8px 0 10px;flex-wrap:wrap}
+.qsec-n{width:28px;height:28px;border-radius:50%;background:var(--accent);color:var(--accent-ink);display:inline-grid;place-items:center;font-weight:700;font-size:14px;flex:none}
+.qsec-zh{font-family:var(--zh);font-size:23px;font-weight:700;color:var(--accent-text)}
+.qsec-en{font-size:15px;color:var(--muted);font-weight:600}
+.qsub{font-family:var(--zh);font-weight:600;color:var(--muted);font-size:15px;margin:12px 0 0}
+.qa{margin-top:10px;display:flex;flex-direction:column;gap:6px}
+.qa-l{font-size:11px;font-weight:700;letter-spacing:.5px;color:var(--muted)}
+.qa-live{background:var(--accent-soft);border-radius:10px;padding:2px 12px}
+.qa-live .zh{font-size:calc(var(--fs)*.85)}
+.qa-in{width:100%;font-family:var(--zh);font-size:calc(var(--fs)*.7);min-height:46px}
+.qadd{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;padding-top:14px;border-top:1px dashed var(--line)}
+.qadd .live-py{flex-basis:100%}
+/* live pinyin / 注音 for whatever the teacher types */
+.live-py{background:var(--accent-soft);border-radius:10px;padding:2px 12px;margin:2px 0 4px}
+.live-py .zh{font-size:calc(var(--fs)*.75)}
+.pop .live-py .zh{font-size:20px}
+.live-chip{position:relative;display:none;width:0;height:0;vertical-align:top}
+.live-chip:has(+ input:focus){display:inline-block}
+.live-chip>span{position:absolute;bottom:2px;left:0;white-space:nowrap;background:var(--paper);border:1px solid var(--accent);border-radius:8px;padding:0 8px;box-shadow:0 4px 12px var(--shadow);z-index:6}
+.live-chip .zh{font-size:calc(var(--fs)*.75);line-height:2.1}
+.rocheck{font-size:13px;padding:2px 10px;margin-left:6px}
+/* Podcast */
+.pod-card{padding:16px 20px}.pod-src{display:flex;gap:12px;align-items:flex-start}.pod-ic{font-size:26px;line-height:1}
+.pod-k{font-size:12px;color:var(--muted);letter-spacing:.02em}.pod-a{font-weight:600;color:var(--accent,#3e7a96);text-decoration:none;word-break:break-all}.pod-a:hover{text-decoration:underline}
+.pod-tags{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:6px}.pod-lv,.pod-tp{font-size:12px;border-radius:999px;padding:1px 9px}.pod-lv{background:#e6f0f5;color:#2f6a85}.pod-tp{background:#f3ece0;color:#80602a}
+.pod-sum{margin-top:4px}.pod-en{margin-top:10px;font-size:14px}.pod-en summary{cursor:pointer;color:var(--muted)}.pod-en p{margin:6px 0 0;line-height:1.55}
+.pod-tr{font-size:14px;color:var(--muted);margin:-2px 0 12px 4px;line-height:1.45}.pod-cards>.card{margin-bottom:14px}.pod-vt{font-size:14px;color:var(--muted);margin:-2px 0 10px}.pod-body{font-size:15px;line-height:1.6;margin:4px 0 10px}.pod-kw{margin:2px 0 8px}
+.vc .vx{margin-top:8px;padding-top:6px;border-top:1px dashed var(--line);--fs:15px;font-size:15px}.vc .vxe{font-size:13px;color:var(--muted)}
+.ptag{display:block;font-size:10px;color:var(--muted);font-weight:400;margin-top:1px}.ptopics{display:flex;flex-wrap:wrap;gap:4px;padding:4px 8px 6px}.ptp{font-size:11px;padding:1px 8px;border-radius:999px;border:1px solid var(--line);background:transparent;cursor:pointer}.ptp.on{background:#2f6a85;color:#fff;border-color:#2f6a85}
+.pe-tps{display:flex;flex-wrap:wrap;gap:4px 12px}
+.tu-bar{margin:6px 0 10px;padding:8px 10px;border:1px solid var(--line);border-radius:10px}.tu-ws{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}.tu-w{font-family:var(--zh);font-size:15px;padding:2px 9px;border-radius:999px;border:1px solid var(--line);background:transparent;cursor:pointer}.tu-w.on{background:#e3f5e3;border-color:#9ccf9c;color:#2f6a2f}.tu-w.man{border-style:dashed}
+.pdf .tu-pw{display:inline-block;margin:0 10px 4px 0;vertical-align:top}.pdf .tu-no{color:#999;margin-top:6px}.pdf .tu-ok{color:#2f6a2f}
+/* 自由對話 free-typing page */
+.td-head{display:flex;align-items:baseline;gap:10px;margin-bottom:10px}
+.td-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.cal-row{flex-basis:100%;display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:6px}
+.cal-chip{font-size:13px;padding:4px 10px;border-radius:16px;background:var(--accent-soft);border-color:transparent;font-family:var(--zh)}.cal-chip.now{background:var(--accent);color:var(--accent-ink)}.cal-re{font-size:13px;padding:2px 8px}
+.hw-top{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.hw-top .seg small{opacity:.7;font-size:11px}.hw-score{font-weight:700;color:var(--accent-text);font-size:18px}
+.hw-sec{padding:14px 18px;margin-bottom:14px}.hw-h{margin-bottom:4px}.hw-t{font-family:var(--zh);font-size:17px;color:var(--accent-text)}.hw-instr{color:var(--muted);font-size:14px;margin-bottom:8px;font-family:var(--zh)}
+.hw-passage{background:var(--sunk);border-radius:10px;padding:10px 14px;margin:6px 0 10px}
+.hw-item{display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-bottom:1px dashed var(--line)}.hw-item:last-of-type{border-bottom:0}.hw-n{color:var(--muted);min-width:22px;padding-top:4px}.hw-body{flex:1;min-width:0}
+.hw-q{margin-bottom:6px}.hw-opts{display:flex;flex-wrap:wrap;gap:6px}.hw-opt{border-radius:10px;text-align:left}.hw-opt.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}.hw-opt.on rt{color:var(--accent-ink)}.hw-opt.key{border:2px solid var(--ok)}.hw-opt.iskey{border:2px dashed var(--ok)}
+.hw-ok{color:var(--ok);font-weight:700;font-size:20px}.hw-no{color:var(--bad);font-weight:700;font-size:20px}.hw-key{color:var(--ok);font-weight:600;margin-left:8px}
+.hw-tones{display:flex;gap:14px;flex-wrap:wrap}.hw-syl{display:inline-flex;gap:3px}.hw-tb{padding:4px 8px;font-size:15px}.hw-tb.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}.hw-tb.key{border:2px solid var(--ok)}
+.hw-plain{font-family:var(--zh);font-size:calc(var(--fs) * 1.05)}.hw-in{width:100%;max-width:520px;font-size:17px}.hw-ta{font-family:var(--zh)}.hw-hint{color:var(--accent-text);font-family:var(--zh)}
+.hw-img{display:block;max-width:360px;width:100%;border-radius:10px;margin:4px 0 8px}.hw-listen{margin-bottom:6px}
+.hw-fb{margin-top:6px;border-radius:8px;padding:6px 10px;font-size:14px}.hw-fb.good{background:color-mix(in srgb,var(--ok) 14%,transparent)}.hw-fb.fix{background:color-mix(in srgb,var(--bad) 10%,transparent)}.hw-model{margin-top:6px;color:var(--muted)}
+.hw-recbox{display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:var(--accent-soft);border-radius:10px;padding:8px 12px;margin:6px 0 10px}.hw-recbox b{font-family:var(--zh);color:var(--accent-text)}
+.hw-audbar{display:flex;align-items:center;gap:4px;flex-wrap:wrap;margin-top:6px}.hw-secaud{margin:4px 0 8px}
+.hw-foot{margin-top:10px;display:flex;justify-content:flex-end}.hw-ed{font-size:12px;color:var(--accent-text)}.hw-del{color:var(--bad)}
+.hw-match .hw-row,.hw-right .hw-row{display:flex;align-items:center;gap:8px;padding:5px 0}.hw-right{margin-top:10px;padding-top:8px;border-top:1px solid var(--line)}
+.hl-note{display:inline-block;font-family:var(--ui);font-size:12px;color:#8a6d1d;background:#fff3c4;border-radius:8px;padding:0 7px;margin:0 4px;line-height:1.6;vertical-align:middle;user-select:none;-webkit-user-select:none}
+mark.f-hl.hl-y[data-n]::after{content:"✎ " attr(data-n);font-family:var(--ui);font-size:12px;color:#8a6d1d;margin-left:5px}
+.hl-mean{display:inline-block;font-family:var(--ui);font-size:12px;font-weight:500;color:#3f7a3f;background:var(--hl-g);border-radius:8px;padding:0 7px;margin:0 4px;line-height:1.6;vertical-align:middle;white-space:nowrap;user-select:none;-webkit-user-select:none;font-style:normal}
+mark.f-hl.hl-g[data-m]::after{content:attr(data-m);font-family:var(--ui);font-size:12px;color:#3f7a3f;margin-left:5px;font-weight:500}
+.f-hl{color:inherit;border-radius:3px;padding:0 1px}.f-hl.hl-y{background:var(--hl-y)}.f-hl.hl-g{background:var(--hl-g)}.f-hl.hl-p{background:var(--hl-p)}.f-hl.hl-b{background:var(--hl-b)}
+.hl-pick{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:8px 0 4px}
+.swl{display:flex;align-items:center;gap:7px;padding:5px 8px;font-family:var(--zh);font-size:14px;border-radius:9px;text-align:left}
+.swl .sw{width:18px;height:18px;flex:none;box-shadow:none;border:0}.swl.on{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-soft);font-weight:700}
+.ncat{display:flex;align-items:center;gap:7px;font-family:var(--zh);font-weight:700;margin:14px 0 4px}.ncat .sw{width:16px;height:16px;box-shadow:none;border:0;cursor:default}
+.hlwrap{position:relative;display:inline-flex}
+.hlmenu{position:absolute;top:calc(100% + 6px);right:0;z-index:60;background:var(--paper);border:1px solid var(--line);border-radius:12px;box-shadow:0 8px 24px var(--shadow);padding:6px;display:flex;flex-direction:column;gap:3px;min-width:170px}
+.hlmenu button{border:0;justify-content:flex-start}
+.td-wb{min-height:60vh;max-height:none;font-size:calc(var(--fs) * .95);line-height:2.3}
+body.py-zy .td-wb{line-height:2}
+.td-ign,.td-ign rt{color:var(--muted)!important;opacity:.55}.td-ign.f-hl{background:transparent!important}.td-wb .td-l{min-height:1.6em}.td-wb .td-br{color:var(--muted);font-weight:400}
+.td-wb rt,.td-wb .zv{pointer-events:none}
+.td-view{min-height:52vh;max-height:70vh;overflow:auto;border:1px solid var(--line);border-radius:8px;padding:8px 14px;background:var(--sunk)}
+.td .zh{font-size:calc(var(--fs)*.8)}
+.td-l{min-height:1.2em}.td-gap{height:.6em}
+.f-b,.f-b .zh{font-weight:700}
+.f-u,.f-u .zc,.f-u ruby{text-decoration:underline}
+.f-s,.f-s .zc,.f-s ruby{text-decoration:line-through}
+.f-m,.f-m .zh{color:#1d5fa8;font-weight:700}
+.td-word{box-shadow:inset 0 -2px 0 var(--ok);padding:0 1px}
+.td-en{font-size:14px;color:var(--ok);margin-left:4px}
+.td-tools{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:8px}
+.td-tools button{font-size:14px}
+.td-ed{min-height:52vh;max-height:70vh;overflow:auto;border:1px solid var(--line);border-radius:8px;background:var(--paper);font-family:var(--zh);font-size:18px;line-height:1.8;padding:10px 14px;outline:none}
+.td-ed:focus{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-soft)}
+.td-ed:empty::before{content:attr(data-ph);color:var(--muted)}
+.rt{width:100%;min-height:46px;border:1px solid var(--line);border-radius:8px;padding:6px 10px;background:var(--paper);color:var(--ink);line-height:1.7;outline:none;white-space:pre-wrap;word-break:break-word;cursor:text}
+.rt:focus{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-soft)}
+.rt:empty::before{content:attr(data-ph);color:var(--muted);pointer-events:none}
+.pop .pop-note{margin-top:8px;min-height:54px;font-family:var(--ui);font-size:14px}
+#fmtBar button{min-width:34px}#fmtBar #toneozBtn{font-family:var(--zh)}
+#toneozPanel{position:fixed;right:16px;bottom:16px;z-index:55;width:min(460px,calc(100vw - 32px));background:var(--paper);border:1px solid var(--line);border-radius:14px;box-shadow:0 14px 40px var(--shadow);padding:10px 12px}
+#toneozPanel .tz-h{display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:14px}
+#toneozPanel iframe{width:100%;height:min(420px,55vh);border:1px solid var(--line);border-radius:8px;background:#fff}
+.td-wrong,.td-wrong .zh{color:var(--bad)}
+.td-right,.td-right .zh{color:var(--ok)}
+.td-arrow{margin:0 8px;font-weight:700;color:var(--muted)}
+.td-help{margin:10px 0 0}
+@media (max-width:900px){.td-grid{grid-template-columns:1fr}.td-ed,.td-view{min-height:30vh}}
+.qadd-in{flex:1;min-width:0;font-family:var(--zh)}
+
+/* grammar */
+.gp-title{font-family:var(--zh);font-size:calc(var(--fs)*1.05);font-weight:600;color:var(--accent-text);margin-bottom:8px}
+.gp-title .zh{font-size:inherit;line-height:1.8}
+.gp-p{font-size:16px;line-height:1.7;margin:6px 0}
+.gp-p .zh{font-size:calc(var(--fs)*.8);line-height:2}
+.gp-note{background:var(--note);border-left:4px solid var(--note-line);border-radius:8px;padding:6px 12px;margin:8px 0}
+.pat{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:10px 0;padding:10px 12px;background:var(--sunk);border-radius:10px}
+.pat .chip{background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:4px 10px;font-family:var(--zh);font-size:18px}
+.pat .chip.k{background:var(--paper);color:#1d5fa8;border-color:#1d5fa8;font-weight:700}
+.pat .chip.c-c,.pat .chip.c-s,.pat .chip.c-v,.pat .chip.c-n,.pat .chip.c-a,.pat .chip.c-t,.pat .chip.c-o{font-weight:700;font-family:var(--ui)}
+.c-c,.zh .c-c{color:#b8336a}.c-s,.zh .c-s{color:#9b2c8f}.c-v,.zh .c-v{color:#3f8f2a}.c-n,.zh .c-n{color:#c46a12}.c-a,.zh .c-a{color:#1f7f86}.c-t,.zh .c-t{color:#8a6d1d}.c-o,.zh .c-o{color:#5b6b8a}.c-k,.zh .c-k{color:#1d5fa8;font-weight:700}
+.patkey{display:flex;flex-wrap:wrap;gap:4px 14px;margin:-4px 0 10px 4px;font-size:12px}.patkey b{font-family:var(--ui)}
+.gk,.zh .gk{font-weight:700;color:#0f4c81;text-decoration:underline;text-decoration-color:var(--accent);text-underline-offset:3px}
+.ex .zh{white-space:pre-line}
+.zh .c-x{color:#c45400;font-weight:700;border-bottom:2px dashed #e67e22}
+.xtag{display:inline-block;margin-left:10px;font-family:var(--zh);font-size:14px;font-weight:700;color:#c45400;border:1.5px solid #e67e22;border-radius:12px;padding:0 9px;vertical-align:middle;line-height:1.6;white-space:nowrap}
+.c-bad,.zh .c-bad{color:#c0392b;text-decoration:underline wavy #c0392b;text-underline-offset:5px;text-decoration-thickness:1px}
+.ex.ex-bad{border-left-color:#e7a29a;background:#fdf1ef;border-radius:0 8px 8px 0}
+.ex.ex-bad [data-say]{display:none}
+.ex .exn.bad{color:#c0392b;font-weight:700;font-size:18px}
+.bad-note{font-size:12px;font-weight:700;color:#c0392b;letter-spacing:.3px;margin-top:4px}
+.ex-en{font-size:15px;color:var(--muted);white-space:pre-line;margin:2px 0 6px}
+.ex .exen{font-size:12px;font-weight:700;letter-spacing:.5px}.ex .exen.on{opacity:1;color:var(--accent-text)}
+.ex .exn{flex:none;font-weight:600;color:var(--muted);padding-top:calc(var(--fs)*.55);min-width:2em}
+.pat .plus{color:var(--muted);font-weight:700}
+.ex{display:flex;gap:10px;align-items:flex-start;padding:2px 0 2px 12px;border-left:3px solid var(--accent-soft);margin:4px 0}
+.ex .zh{font-size:calc(var(--fs)*.9)}
+.ex .en{color:var(--muted);font-size:14px;margin-top:-4px}
+.ex .say{padding:2px 6px;margin-top:calc(var(--fs)*.4)}
+.drill{margin-top:14px;border-top:1px solid var(--line);padding-top:10px}
+.drill-h{font-weight:700;font-size:13px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);margin-bottom:6px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.drill-h button{font-size:13px;padding:4px 12px;text-transform:none;letter-spacing:0}
+.dr{display:flex;gap:10px;align-items:flex-start;padding:6px 0}
+.dr .n{flex:none;color:var(--muted);font-weight:600;padding-top:calc(var(--fs)*.55);width:22px}
+/* each exercise in its own box: number, type, and a green / red edge once it's checked */
+.pdlib{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px;max-height:30vh;overflow:auto;padding:2px}
+.pdpick{position:relative;padding:3px;border:2px solid var(--line);border-radius:10px;background:var(--paper);height:96px;display:flex;align-items:center;justify-content:center}
+.pdpick img{max-width:100%;max-height:100%;object-fit:contain;border-radius:6px}
+.pdpick.on{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-soft)}
+.pdpick.lost{border-style:dashed;border-color:#e67e22}
+.pdpick span{position:absolute;left:3px;right:3px;bottom:3px;font-size:10px;font-weight:700;color:#fff;background:rgba(196,84,0,.85);border-radius:4px}
+.dr-side{display:flex;gap:18px;align-items:flex-end}
+.dr-sideimg{flex:none;width:min(240px,42%)}
+.dr-sideimg .dimg img{width:100%;max-height:240px;object-fit:contain}
+.dr-sidetxt{flex:1;min-width:0;padding-bottom:6px}
+@media (max-width:640px){.dr-side{flex-direction:column;align-items:stretch}.dr-sideimg{width:100%}}
+.rv-h{font-size:12px;font-weight:700;letter-spacing:.4px;color:var(--muted);margin:12px 0 6px}
+.rv-h:first-child{margin-top:0}
+.rv-m{border:1px solid var(--line);border-radius:10px;padding:8px 12px;margin:6px 0}
+.rv-m.done{border-color:var(--ok);background:var(--ok-soft)}
+.rv-wrong,.rv-right{display:flex;gap:8px;align-items:baseline}
+.rv-wrong .zh{font-size:calc(var(--fs)*.8)}.rv-right .zh{font-size:calc(var(--fs)*.8)}
+.rv-right,.rv-right .zh{color:var(--ok)}
+.rv-x{color:var(--bad);font-weight:700}.rv-ok{color:var(--ok);font-weight:700}
+.rv-btns{display:flex;gap:6px;justify-content:flex-end;margin-top:4px}.rv-btns button{font-size:13px;padding:3px 10px}
+.rv-words{display:flex;flex-wrap:wrap;gap:8px}
+.rv-word{display:flex;flex-direction:column;align-items:center;gap:0;padding:4px 12px;border-radius:12px}
+.rv-word .zh{font-size:calc(var(--fs)*.9);line-height:2}.rv-word small{font-size:12px;color:var(--muted)}
+.rv-word.weak{border-color:#e8a29a}
+.rv-card{text-align:center;padding:12px 0 6px}
+.rv-big .zh{font-size:calc(var(--fs)*2.4);font-weight:700;line-height:1.9}
+.rv-mean{font-size:20px;margin:2px 0 4px}
+.rv-good{background:var(--ok-soft);border-color:var(--ok);color:var(--ok);font-weight:700;padding:8px 18px}
+.rv-bad{background:var(--bad-soft);border-color:var(--bad);color:var(--bad);font-weight:700;padding:8px 18px}
+.dimgs{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-start;margin:6px 0 8px}
+.dimgs.solo{margin:10px 0 4px}
+.dimg{margin:0;max-width:100%;text-align:center}
+.dimg img{display:block;max-width:100%;max-height:240px;border-radius:10px;box-shadow:0 1px 3px var(--shadow)}
+.dimgs.solo .dimg img{max-height:460px}
+.dimg figcaption{font-size:13px;color:var(--muted);margin-top:4px}
+.drill .dr{position:relative}
+.drill .dr .dpic{position:absolute;right:6px;top:6px;font-size:12px;padding:2px 8px;opacity:.35}
+.drill .dr:hover .dpic{opacity:1}
+.drill .dr{border:1px solid var(--line);border-radius:12px;padding:10px 14px;margin:10px 0;background:var(--paper);gap:12px}
+.drill .dr .n{width:28px;height:28px;border-radius:50%;background:var(--accent-soft);color:var(--accent-text);display:grid;place-items:center;padding:0;font-size:13px;font-weight:700;margin-top:2px}
+.drill .dr.dr-ok{border-color:var(--ok);box-shadow:inset 4px 0 0 var(--ok)}
+.drill .dr.dr-ok .n{background:var(--ok);color:#fff}
+.drill .dr.dr-no{border-color:var(--bad);box-shadow:inset 4px 0 0 var(--bad)}
+.drill .dr.dr-no .n{background:var(--bad);color:#fff}
+.drp+.drp{margin-top:6px}
+.ro-fix{margin:2px 0}
+.drspk{font-family:var(--zh);font-size:calc(var(--fs)*.85);font-weight:400;padding-top:18px}
+.dr-line{margin:2px 0}
+.dr-spk{font-family:var(--zh);font-size:calc(var(--fs)*.85);margin-right:2px}
+.dr-hint{font-size:14px;font-style:italic;color:var(--muted);margin:6px 0 0;padding-left:2px}
+.dr-hint::before{content:"💬 ";font-style:normal}
+.dr-t{font-size:11px;font-weight:700;letter-spacing:.4px;color:var(--muted);margin:2px 0 0}
+.dr-t b{font-family:var(--zh);font-size:12px;color:var(--accent-text);margin-right:4px}
+#edQ textarea,#edX textarea{height:24vh}
+#edX .field label{font-family:var(--zh);font-size:15px;color:var(--accent-text)}
+#edQ .field label{font-family:var(--zh);font-size:15px;color:var(--accent-text)}
+.dr .zh{font-size:calc(var(--fs)*.9)}
+.dr input.blank{width:6.5em;font-family:var(--zh);font-size:calc(var(--fs)*.8);text-align:center;border:0;border-bottom:2px solid var(--accent);border-radius:0;background:var(--sunk);padding:0 4px;margin:0 3px}
+.dr input.blank.ok{border-color:var(--ok);background:var(--ok-soft)}
+.dr input.blank.no{border-color:var(--bad);background:var(--bad-soft)}
+.dr .sol{font-size:13px;color:var(--ok);font-weight:600;font-family:var(--zh);margin-left:6px}
+.dr input.full{width:100%;font-family:var(--zh);font-size:calc(var(--fs)*.75)}
+
+/* drawer */
+.drawer{position:fixed;right:0;top:0;bottom:0;width:360px;max-width:100vw;background:var(--paper);border-left:1px solid var(--line);box-shadow:-10px 0 30px var(--shadow);z-index:40;display:flex;flex-direction:column;transform:translateX(105%);transition:transform .2s;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+.drawer.open{transform:none}
+.drawer .dh{display:flex;align-items:center;gap:8px;padding:14px 16px;border-bottom:1px solid var(--line);font-weight:700}
+.drawer .db{flex:1;overflow:auto;padding:10px 14px}
+.drawer .df{padding:12px 16px;border-top:1px solid var(--line);display:flex;gap:8px}
+.ni{padding:10px;border-radius:10px;border:1px solid transparent;box-shadow:0 1px 2px var(--shadow);margin-bottom:8px;background:var(--paper);cursor:pointer}
+.ni:hover{border-color:var(--muted)}
+.ni .nz{font-family:var(--zh);font-size:18px;padding:0 4px;border-radius:4px;color:var(--hl-ink)}
+.ni .nn{font-size:14px;margin-top:4px;white-space:pre-wrap}
+.ni .ns{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+
+/* modal */
+.modal-bg{position:fixed;inset:0;background:var(--scrim);z-index:60;display:flex;align-items:center;justify-content:center;padding:16px}
+.modal{background:var(--paper);border-radius:16px;width:min(1100px,100%);max-height:calc(100% - 16px);display:flex;flex-direction:column;box-shadow:0 20px 60px var(--shadow)}
+.modal.sm{width:min(520px,100%)}
+.modal .mh{padding:16px 20px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px;font-weight:700;font-size:17px}
+.modal .mb{padding:16px 20px;overflow:auto;flex:1}
+.modal .mf{padding:12px 20px;border-top:1px solid var(--line);display:flex;gap:8px;justify-content:flex-end;align-items:center;flex-wrap:wrap}
+.ed-grid{display:grid;grid-template-columns:1fr 300px;gap:16px;min-height:0}
+.ed-grid textarea{width:100%;height:50vh;resize:vertical;font-size:16px}
+.help{font-size:13px;line-height:1.6;color:var(--ink);background:var(--sunk);border-radius:10px;padding:12px 14px;overflow:auto;max-height:50vh}
+.help code,.help pre{font-family:Consolas,"Microsoft JhengHei",monospace;font-size:12.5px;background:var(--paper);border-radius:4px}
+.help pre{padding:8px;white-space:pre-wrap;border:1px solid var(--line)}
+.help h4{margin:4px 0 6px}
+.ed-tabs{margin-bottom:10px;flex-wrap:wrap}
+.field{display:flex;flex-direction:column;gap:4px;margin-bottom:12px}
+.field label{font-size:13px;font-weight:600;color:var(--muted)}
+.chk{display:flex;gap:8px;align-items:center;padding:6px 0;font-size:15px}
+.toast{position:fixed;bottom:calc(20px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:10px;z-index:80;font-size:14px;box-shadow:0 8px 24px var(--shadow)}
+.busy{position:fixed;inset:0;z-index:70;background:var(--scrim);display:grid;place-items:center}
+.busy div{background:var(--paper);padding:18px 26px;border-radius:12px;font-weight:600}
+#pdfStage{position:fixed;left:-12000px;top:0}
+@media (max-width:760px){
+  aside.side{position:fixed;z-index:30;top:0;bottom:0;box-shadow:10px 0 30px var(--shadow);padding-top:calc(12px + env(safe-area-inset-top,0px))}
+  .inner{padding:14px 16px 80px}
+  .ed-grid{grid-template-columns:1fr}
+  .help{max-height:none}
+  .qz-opts{grid-template-columns:1fr}
+  .tabs{overflow-x:auto}
+  .fc .big{font-size:48px}
+  .crumb{display:none}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+/* 螢光筆暴走 additions */
+.hgw-brand{display:flex;align-items:center;gap:8px}.hgw-logo{font-size:24px;line-height:1}.hgw-brand .name{font-family:var(--zh);font-weight:700;font-size:18px;line-height:1.1;display:flex;flex-direction:column}.hgw-brand small{font-family:Inter,sans-serif;font-weight:500;font-size:11px;color:var(--muted)}
+.hgw-new{padding:10px 10px 4px}.hgw-new button{width:100%}.hgw-filter{padding:4px 10px}.hgw-filter select{width:100%}
+.hgw-date{font-size:12px;color:var(--muted);padding:10px 12px 2px;font-variant-numeric:tabular-nums}
+.hgw-pg{display:flex;align-items:center;gap:4px}.hgw-pn{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px}.hgw-pn span{color:var(--muted)}.hgw-pg.on .hgw-pn span{color:inherit}
+.hgw-del{opacity:0;padding:0 6px;font-size:12px}.hgw-pg:hover .hgw-del,.hgw-pg.on .hgw-del{opacity:.7}
+.hgw-credit{font-size:10.5px;color:var(--muted);line-height:1.5;padding:8px 4px 0}.hgw-credit a{color:inherit}
+.hgw-stu{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:12px 16px}.hgw-stu input{flex:1;min-width:180px}
+.hgw-stus{display:flex;gap:16px;align-items:flex-start}.hgw-stul{display:flex;flex-direction:column;gap:6px;min-width:130px}.hgw-stuf{flex:1;min-width:0}
+.hgw-help p{line-height:1.7;margin:0 0 10px}
+@media (max-width:760px){.hgw-stus{flex-direction:column}.hgw-stul{flex-direction:row;flex-wrap:wrap}.hgw-brand small{display:none}}
+</style></head><body>
+<header>
+  <button class="ghost" id="btnSide" title="Show or hide the page list" aria-label="Pages">☰</button>
+  <div class="brand hgw-brand"><span class="hgw-logo">🖍</span><span class="name">螢光筆暴走<small>Highlighter Gone Wild</small></span></div>
+  <div class="crumb" id="crumb"></div>
+  <div class="spacer"></div>
+  <span class="chip-sync" id="syncChip">連線中… Connecting</span>
+  <span class="status" id="dictStatus">字典載入中… Loading dictionary</span>
+  <div class="seg rw" id="fmtBar" title="Format the words you select"><button data-tdcmd="bold" title="Bold (Ctrl+B)"><b>B</b></button><button data-tdcmd="underline" title="Underline (Ctrl+U)"><u>U</u></button><button data-tdcmd="strikeThrough" title="Strikethrough"><s>S</s></button><span class="hlwrap"><button data-hlm title="螢光筆 Highlighter">🖍 螢光筆</button><span class="hlmenu" id="hlMenu" hidden></span></span><button data-tdcmd="removeFormat" title="Clear formatting">✕</button></div>
+  <div class="seg" id="zhsMode" title="Traditional / Simplified characters"><button data-v="t">繁</button><button data-v="s">簡</button></div>
+  <div class="seg" id="pyMode" title="Pronunciation guide"><button data-v="off">Off</button><button data-v="py">Pinyin</button><button data-v="zy">注音</button></div>
+  <div class="seg"><button id="fsDown" title="Smaller text">A−</button><button id="fsUp" title="Bigger text">A+</button></div>
+  <button class="primary" id="btnExport">Export PDF</button>
+</header>
+<div class="wrap">
+  <aside class="side" id="side"></aside>
+  <main id="main"><div class="inner" id="inner"><div class="empty"><div class="big">載入中… Loading…</div></div></div></main>
+</div>
+<input type="file" id="fileIn" accept=".json" hidden>
+<div id="pdfStage"></div>
+<script src="https://cdn.jsdelivr.net/npm/pinyin-pro@3.26.0/dist/index.js"></script>
+<script>
+/* 螢光筆暴走 Highlighter Gone Wild — made by 小嵐 (Learn with Blue).
+   Dictionary: CC-CEDICT (https://www.mdbg.net/chinese/dictionary?page=cc-cedict), CC BY-SA 4.0.
+   Pinyin: pinyin-pro (MIT). Simplified conversion: opencc-js (MIT). PDF: html2pdf.js (MIT). */
+const DICT_URL = 'https://cdn.jsdelivr.net/npm/hanzi@2.1.5/lib/data/cedict_ts.u8.js';
+const PDF_LIB = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
+const UI_KEY = 'hgw-ui-v1', LOCAL_KEY = 'hgw-local-v1';
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid = () => Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-4);
+const HAN = /\p{Script=Han}/u;
+const isHan = ch => HAN.test(ch);
+const clean = s => String(s || '').replace(/[︀-️]|\uDB40[\uDD00-\uDDEF]|​/g, '').replace(/\r/g, '');
+const lsGet = k => { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } };
+const lsSet = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} };
+let GLOSS = {};
+let PYCTX = [];
+let PYFIX = {};
+let UI = Object.assign({ book: null, lesson: null, tab: 'text', py: 'py', fs: 24, side: true }, lsGet(UI_KEY) || {});
+const DICT = new Map();
+const T2S = new Map();
+const TWPR = new Map();
+let DICT_MAX = 1;
+let dictReady = false;
+const NEUTRAL_KEEP = new Set([...'的得地了著過嗎呢吧啊呀哪們麼子個嘛啦喔哦唄囉']);
+function loadDict() {
+  window.module = { exports: null };
+  const sc = document.createElement('script'); sc.src = DICT_URL; sc.async = true;
+  sc.onload = () => { const raw = window.module.exports; delete window.module; if (typeof raw === 'string') parseDict(raw); else dictFail(); };
+  sc.onerror = dictFail;
+  document.head.appendChild(sc);
+}
+function dictFail() { $('#dictStatus').textContent = '字典暫時無法使用 Dictionary unavailable'; }
+function parseDict(raw) {
+  const re = /^(\S+) (\S+) \[([^\]]+)\] \/(.+)\/\s*$/;
+  for (const ln of raw.split('\n')) {
+    if (!ln || ln[0] === '#') continue;
+    const m = re.exec(ln); if (!m) continue;
+    const entry = { p: m[3], d: m[4].split('/').filter(Boolean) };
+    const bad = /^(surname |variant of|old variant|archaic|see |used in |\(old\))/i.test(entry.d[0] || '');
+    entry._bad = bad;
+    // only unconditional notes ("/Taiwan pr. [qi2]/"), not ones like 多 "Taiwan pr. [duo2] when it means 'how'"
+    const twItem = entry.d.find(x => /^Taiwan pr\. \[[^\]]+\]$/.test(x.trim()));
+    const tw = twItem && /\[([^\]]+)\]/.exec(twItem);
+    if (tw && !bad) for (const key of [m[1], m[2]]) { const syl = markPinyin(tw[1].trim()).split(' '); if (syl.length === key.length && !TWPR.has(key)) TWPR.set(key, syl); }
+    if (m[1].length === 1 && m[1] !== m[2] && !bad && !T2S.has(m[1])) T2S.set(m[1], m[2]);
+    for (const key of new Set([m[1], m[2]])) {
+      let arr = DICT.get(key); if (!arr) { arr = []; DICT.set(key, arr); }
+      if (bad) arr.push(entry); else { const i = arr.findIndex(e => e._bad); arr.splice(i < 0 ? arr.length : i, 0, entry); }
+      if (key.length > DICT_MAX && key.length <= 8) DICT_MAX = key.length;
+    }
+  }
+  T2S.set('妳', '你'); T2S.set('祢', '你'); T2S.set('臺', '台');
+  dictReady = true; $('#dictStatus').textContent = '';
+  rebuildLexicon(); render();
+}
+const TONES = { a:'āáǎàa', e:'ēéěèe', i:'īíǐìi', o:'ōóǒòo', u:'ūúǔùu', 'ü':'ǖǘǚǜü' };
+function markSyl(s) {
+  const m = /^([a-zü:v]+)([1-5])$/i.exec(s); if (!m) return s.replace(/u:|v/g, 'ü');
+  let syl = m[1].replace(/u:|v/gi, 'ü'); const t = +m[2] - 1; if (t === 4) return syl;
+  const low = syl.toLowerCase();
+  let idx = low.indexOf('a'); if (idx < 0) idx = low.indexOf('e');
+  if (idx < 0) idx = low.indexOf('ou') >= 0 ? low.indexOf('o') : -1;
+  if (idx < 0) { for (let i = low.length - 1; i >= 0; i--) if ('iouü'.includes(low[i])) { idx = i; break; } }
+  if (idx < 0) return syl;
+  return syl.slice(0, idx) + TONES[low[idx]][t] + syl.slice(idx + 1);
+}
+const markPinyin = p => p.split(' ').map(markSyl).join(' ');
+function sylInfo(py) {
+  let tone = 5; const sets = ['āēīōūǖ', 'áéíóúǘ', 'ǎěǐǒǔǚ', 'àèìòùǜ'];
+  for (const ch of py) for (let t = 0; t < 4; t++) if (sets[t].includes(ch)) tone = t + 1;
+  const plain = py.toLowerCase().replace(/[ǖǘǚǜü]/g, 'v').normalize('NFD').replace(/[̀-ͯ]/g, '');
+  return { tone, plain };
+}
+const ZY_INI = { b:'ㄅ',p:'ㄆ',m:'ㄇ',f:'ㄈ',d:'ㄉ',t:'ㄊ',n:'ㄋ',l:'ㄌ',g:'ㄍ',k:'ㄎ',h:'ㄏ',j:'ㄐ',q:'ㄑ',x:'ㄒ',zh:'ㄓ',ch:'ㄔ',sh:'ㄕ',r:'ㄖ',z:'ㄗ',c:'ㄘ',s:'ㄙ' };
+const ZY_FIN = { a:'ㄚ',o:'ㄛ',e:'ㄜ',ai:'ㄞ',ei:'ㄟ',ao:'ㄠ',ou:'ㄡ',an:'ㄢ',en:'ㄣ',ang:'ㄤ',eng:'ㄥ',er:'ㄦ',i:'ㄧ',u:'ㄨ',v:'ㄩ',n:'ㄣ',ng:'ㄥ' };
+const ZY_TONE = ['', '', 'ˊ', 'ˇ', 'ˋ'];
+function toZhuyin(plain, tone) {
+  let s = plain; if (!s) return '';
+  let ini = '';
+  for (const i of ['zh','ch','sh','b','p','m','f','d','t','n','l','g','k','h','j','q','x','r','z','c','s']) if (s.startsWith(i) && s.length > i.length) { ini = i; s = s.slice(i.length); break; }
+  if (!ini) {
+    if (s.startsWith('yu')) s = 'v' + s.slice(2); else if (s.startsWith('yi')) s = 'i' + s.slice(2);
+    else if (s.startsWith('y')) s = 'i' + s.slice(1); else if (s.startsWith('wu')) s = 'u' + s.slice(2);
+    else if (s.startsWith('w')) s = 'u' + s.slice(1);
+  }
+  if (ini && 'jqx'.includes(ini) && s[0] === 'u') s = 'v' + s.slice(1);
+  let fin;
+  if (['zh','ch','sh','r','z','c','s'].includes(ini) && s === 'i') fin = '';
+  else {
+    if (s === 'iu') s = 'iou'; else if (s === 'ui') s = 'uei'; else if (s === 'un') s = 'uen';
+    if (s === 'iong') fin = 'ㄩㄥ'; else if (s === 'ong') fin = 'ㄨㄥ';
+    else if (ZY_FIN[s] && s !== 'n' && s !== 'ng') fin = ZY_FIN[s];
+    else { const med = s[0]; const rest = s.slice(1); fin = (ZY_FIN[med] || '') + ((rest === 'e' && (med === 'i' || med === 'v')) ? 'ㄝ' : (ZY_FIN[rest] || rest)); }
+  }
+  const body = (ZY_INI[ini] || '') + fin;
+  return tone === 5 ? '˙' + body : body + (ZY_TONE[tone] || '');
+}
+const PY_CACHE = new Map();
+function charPinyin(text) {
+  if (PY_CACHE.has(text)) return PY_CACHE.get(text);
+  const out = new Array(text.length).fill(null);
+  const toks = segment(text);
+  const pp = window.pinyinPro && window.pinyinPro.pinyin;
+  let i = 0;
+  while (i < text.length) {
+    if (!isHan(text[i])) { i++; continue; }
+    let j = i; while (j < text.length && isHan(text[j])) j++;
+    const run = text.slice(i, j);
+    if (pp) {
+      try {
+        const simp = [...run].map(c => T2S.get(c) || c).join('');
+        const arr = pp(simp.length === run.length ? simp : run, { type: 'array' });
+        if (arr.length === run.length) arr.forEach((p, n) => { if (p && /[a-zü]/i.test(p) && !isHan(p)) out[i + n] = p; });
+      } catch (e) {}
+    }
+    i = j;
+  }
+  // Taiwan standard readings (from the dictionary's "Taiwan pr." notes) and full tones instead of neutral tones
+  for (const t of toks) {
+    if (!t.han) continue;
+    const w = text.slice(t.s, t.e);
+    const tww = TWPR.get(w);
+    if (tww && w.length > 1) { tww.forEach((p, n) => out[t.s + n] = p); continue; }
+    // 得 as a complement marker (做得很好, 跑得快) is neutral "de"; dictionary words like 覺得 / 值得 keep their own reading
+    for (let n = t.s; n < t.e; n++) if (text[n] === '得' && out[n] === 'dé' && isHan(text[n - 1] || '') &&
+      ((n > t.s && !DICT.has(w)) || (t.e - t.s === 1 && /[很太非真好不快慢多少更最滿越]/.test(text[n + 1] || '')))) out[n] = 'de';
+    for (let n = t.s; n < t.e; n++) {
+      const c = text[n], cur = out[n]; if (!cur) continue;
+      const twc = TWPR.get(c); const main = dictSyllables(c)?.[0];
+      if (twc && main && cur.toLowerCase() === main.toLowerCase()) { out[n] = twc[0]; continue; }
+      if (sylInfo(cur).tone === 5 && !NEUTRAL_KEEP.has(c) && !(n > t.s && text[n - 1] === c)) {
+        const base = twc ? twc[0] : main;
+        if (base && sylInfo(base).tone !== 5 && sylInfo(base).plain === sylInfo(cur).plain) out[n] = base;
+      }
+    }
+  }
+  for (const t of toks) {
+    if (!t.han) continue;
+    const v = LEX.vocabMap.get(text.slice(t.s, t.e));
+    if (v && v.p) { const syl = splitPinyin(v.p); if (syl.length === t.e - t.s) syl.forEach((p, n) => out[t.s + n] = p); }
+  }
+  for (const t of toks) {
+    if (!t.han) continue;
+    let missing = false; for (let n = t.s; n < t.e; n++) if (!out[n]) missing = true;
+    if (!missing) continue;
+    const w = text.slice(t.s, t.e); const syls = dictSyllables(w);
+    if (syls && syls.length === w.length) syls.forEach((p, n) => { if (!out[t.s + n]) out[t.s + n] = p; });
+    else for (let n = t.s; n < t.e; n++) if (!out[n]) { const s1 = dictSyllables(text[n]); if (s1) out[n] = s1[0]; }
+  }
+  // the teacher's corrections win over everything (longer words last, so they beat single characters)
+  for (const w of Object.keys(PYFIX).sort((a, b) => a.length - b.length)) {
+    const syl = String(PYFIX[w]).split(' '); if (syl.length !== w.length) continue;
+    for (let i = text.indexOf(w); i >= 0; i = text.indexOf(w, i + w.length)) syl.forEach((p, n) => out[i + n] = p);
+  }
+  for (const f of fixesIn(text)) f.syl.forEach((p, n) => out[f.s + n] = p);   // one sentence only (得 děi in 得先在機場…)
+  PY_CACHE.set(text, out);
+  return out;
+}
+function dictSyllables(w) { const d = DICT.get(w); return d && d.length ? markPinyin(d[0].p).split(' ') : null; }
+function splitPinyin(p) {
+  const parts = String(p).trim().toLowerCase().split(/[\s'’\-]+/).filter(Boolean); const out = [];
+  const re = /(zh|ch|sh|[bpmfdtnlgkhjqxrzcsyw])?([aāáǎàeēéěèiīíǐìoōóǒòuūúǔùüǖǘǚǜv]+)(ng|n|r)?(?![aāáǎàeēéěèiīíǐìoōóǒòuūúǔùüǖǘǚǜ])/g;
+  for (const part of parts) { const m = part.match(re); if (m) out.push(...m); }
+  return out;
+}
+function fixesIn(text) {
+  const out = [];
+  for (const f of PYCTX) {
+    const syl = String(f.py || '').split(' '); if (!f.ctx || syl.length !== [...f.w].length) continue;
+    for (let i = text.indexOf(f.ctx); i >= 0; i = text.indexOf(f.ctx, i + 1)) out.push({ id: f.id, s: i + f.at, e: i + f.at + f.w.length, syl });
+  }
+  return out;
+}
+const zyOf = py => { const { tone, plain } = sylInfo(py); return toZhuyin(plain, tone); };
+function zyCol(py) {
+  if (!py) return '';
+  const { tone, plain } = sylInfo(py); const syms = [...toZhuyin(plain, 1)];
+  return `<span class="zv${tone >= 2 && tone <= 4 ? ' tm' : ''}" aria-hidden="true">${tone === 5 ? '<i class="zn">˙</i>' : ''}${syms.map(s => `<b>${s}</b>`).join('')}${tone >= 2 && tone <= 4 ? `<i class="zm">${ZY_TONE[tone]}</i>` : ''}</span>`;
+}
+const pyLabel = py => !py ? '' : UI.py === 'zy' ? zyOf(py) : py;
+const wordPy = w => charPinyin(w).map(p => p || '').join('');
+let LEX = { extra: new Set(), max: 1, vocabMap: new Map(), gloss: new Map() };
+const SEG_CACHE = new Map();
+const SEGR = (window.Intl && Intl.Segmenter) ? new Intl.Segmenter('zh-TW', { granularity: 'word' }) : null;
+function segment(text) {
+  if (SEG_CACHE.has(text)) return SEG_CACHE.get(text);
+  const toks = []; let i = 0; const n = text.length;
+  const extraAt = (p, lim) => { for (let l = Math.min(LEX.max, lim - p); l > 1; l--) if (LEX.extra.has(text.substr(p, l))) return l; return 0; };
+  while (i < n) {
+    if (!isHan(text[i])) { let j = i + 1; while (j < n && !isHan(text[j])) j++; toks.push({ s: i, e: j, han: 0 }); i = j; continue; }
+    let runEnd = i; while (runEnd < n && isHan(text[runEnd])) runEnd++;
+    let bounds = null;
+    if (SEGR && dictReady) { bounds = new Set([runEnd]); for (const sg of SEGR.segment(text.slice(i, runEnd))) bounds.add(i + sg.index); }
+    while (i < runEnd) {
+      let L = extraAt(i, runEnd);
+      if (!L && bounds) { let j = i + 1; while (j < runEnd && !bounds.has(j)) j++; L = j - i; for (let m = 1; m < L; m++) if (extraAt(i + m, runEnd)) { L = m; break; } }
+      if (!L) { L = 1; for (let l = Math.min(LEX.max, runEnd - i); l > 1; l--) if (DICT.has(text.substr(i, l))) { L = l; break; } }
+      toks.push({ s: i, e: i + L, han: 1 }); i += L;
+    }
+  }
+  SEG_CACHE.set(text, toks);
+  return toks;
+}
+function lookup(w) {
+  const res = [];
+  if (GLOSS[w]) res.push({ src: 'Your meaning', defs: [GLOSS[w]] });
+  const v = LEX.vocabMap.get(w); if (v && v.e) res.push({ src: 'Lesson vocabulary', defs: [v.e], pos: v.pos });
+  if (LEX.gloss.has(w)) res.push({ src: 'Lesson note', defs: [LEX.gloss.get(w)] });
+  const d = DICT.get(w); if (d) d.slice(0, 4).forEach(e => res.push({ src: 'Dictionary', defs: e.d.slice(0, 5), p: markPinyin(e.p) }));
+  return res;
+}
+function shortMeaning(w) {
+  if (GLOSS[w]) return GLOSS[w];
+  const v = LEX.vocabMap.get(w); if (v && v.e) return v.e;
+  if (LEX.gloss.has(w)) return LEX.gloss.get(w);
+  const d = DICT.get(w); return d ? d[0].d.slice(0, 3).join('; ') : '';
+}
+const HW2FW = { ',': '，', '.': '。', '!': '！', '?': '？', ':': '：', ';': '；', '(': '（', ')': '）' };
+const ZH_CTX = /[\p{Script=Han}，。！？：；、（）「」『』…]/u;
+function zhPunct(t) {
+  t = String(t ?? ''); if (!HAN.test(t) || !/[,.!?:;()]/.test(t)) return t;
+  const a = t.split('');
+  for (let i = 0; i < a.length; i++) {
+    const c = a[i]; if (!HW2FW[c]) continue;
+    let j = i - 1; while (j >= 0 && a[j] === ' ') j--;
+    let k = i + 1; while (k < a.length && a[k] === ' ') k++;
+    const prev = j >= 0 ? a[j] : '', next = k < a.length ? a[k] : '';
+    const pz = !!prev && ZH_CTX.test(prev), nz = !!next && (ZH_CTX.test(next) || (/^[A-Za-z]$/.test(next) && /[:：]/.test(a[k + 1] || '') && !/[A-Za-z]/.test(prev)));   // 嗎?B: → 嗎？B：
+    let ok;
+    if (c === '(') ok = nz && (!prev || pz);
+    else if (c === ')') ok = pz && (!next || nz);
+    else if (c === '.') ok = pz && (!next || nz) && a[i + 1] !== '.';
+    else if (c === ':') ok = (pz && (!next || nz)) || (nz && /^[A-Za-z甲乙丙]$/.test(prev) && (j === 0 || !/[A-Za-z]/.test(a[j - 1])));
+    else ok = pz && (!next || nz);
+    if (ok) a[i] = HW2FW[c];
+  }
+  return a.join('');
+}
+const OPENCC_URL = 'https://cdn.jsdelivr.net/npm/opencc-js@1.0.5/dist/umd/t2cn.js';
+let ZHS_CONV = null, ZHS_CACHE = new Map();
+async function loadZhs() {
+  if (ZHS_CONV) return true;
+  try { if (!window.OpenCC) await loadScript(OPENCC_URL); ZHS_CONV = window.OpenCC.Converter({ from: 'tw', to: 'cn' }); return true; }
+  catch (e) { UI.zhs = false; saveUI(); toast('Couldn’t load the Simplified converter — staying in Traditional'); return false; }
+}
+function zhDisp(t) {
+  t = String(t ?? ''); if (!UI.zhs || !ZHS_CONV || !HAN.test(t)) return t;
+  let r = ZHS_CACHE.get(t); if (r !== undefined) return r;
+  r = ZHS_CONV(t); if ([...r].length !== [...t].length || r.length !== t.length) r = [...t].map(c => ZHS_CONV(c)).map((c, i) => c.length === 1 ? c : [...t][i]).join('');
+  if (ZHS_CACHE.size > 5000) ZHS_CACHE.clear(); ZHS_CACHE.set(t, r); return r;
+}
+function renderZh(text, k, cols) {
+  text = zhPunct(text); const DSP = zhDisp(text);
+  const toks = segment(text); const py = charPinyin(text); const fx = PYCTX.length ? fixesIn(text) : [];
+  const anns = k ? resolvedAnns().filter(a => a.k === k && !a.orphan) : [];
+  let html = '';
+  for (const t of toks) {
+    const seg = text.slice(t.s, t.e);
+    const cover = anns.filter(a => a.s < t.e && a.e > t.s);
+    const hl = cover.length ? ' hl-' + cover[cover.length - 1].c : '';
+    if (!t.han) {
+      if (!cols) html += `<span class="x${hl}" data-s="${t.s}" data-e="${t.e}">${esc(DSP.slice(t.s, t.e))}</span>`;
+      else for (let i = t.s; i < t.e;) { let j = i + 1; while (j < t.e && cols[j] === cols[i]) j++; html += `<span class="x${hl}${cols[i] ? ' ' + cols[i] : ''}" data-s="${i}" data-e="${j}">${esc(DSP.slice(i, j))}</span>`; i = j; }
+    } else {
+      let inner = '', pyw = '';
+      for (let n = 0; n < seg.length; n++) { const p = py[t.s + n]; pyw += p || ''; const cc = cols && cols[t.s + n] ? cols[t.s + n] : ''; inner += UI.py === 'zy' ? `<span class="zc${cc ? ' ' + cc : ''}">${esc(DSP[t.s + n])}${zyCol(p)}</span>` : `<ruby${cc ? ` class="${cc}"` : ''}>${esc(DSP[t.s + n])}<rt>${esc(pyLabel(p))}</rt></ruby>`; }
+      const f = fx.find(x => x.s < t.e && x.e > t.s);
+      html += `<span class="w${hl}" data-s="${t.s}" data-e="${t.e}" data-w="${esc(seg)}" data-py="${esc(pyw)}"${f ? ` data-fix="${f.id}"` : ''}>${inner}</span>`;
+    }
+    for (const a of anns) if (a.note && a.e > t.s && a.e <= t.e) html += `<sup class="nm" data-ann="${a.id}" title="${esc(a.note)}">${NOTE_NUM.get(a.id) || '•'}</sup>`;
+    for (const a of anns) if (a.c === 'g' && a.mean && a.e > t.s && a.e <= t.e) html += `<span class="hl-mean">${esc(a.mean)}</span>`;
+  }
+  return `<span class="zh"${k ? ` data-k="${k}"` : ''}>${html}</span>`;
+}
+const rtFrom = (text, html) => linesHtml(docLines({ said: text || '', html: html || '' }));
+const richPlain = (text, html) => docLines({ said: text || '', html: html || '' }).map(rs => rs.map(r => { let x = esc(r.t); if (r.s) x = `<s>${x}</s>`; if (r.u) x = `<u>${x}</u>`; if (r.b) x = `<b>${x}</b>`; if (r.h) x = `<mark class="f-hl hl-${r.h}"${r.h === 'g' && r.m ? ` data-m="${esc(r.m)}"` : ''}${r.h === 'y' && r.n ? ` data-n="${esc(r.n)}"` : ''}>${x}</mark>`; return x; }).join('')).join('<br>');
+let POP = null;
+function closePop() { $('.pop')?.remove(); POP = null; }
+function openPop(rect, info) {
+  closePop(); POP = info;
+  const { word, k } = info;
+  const ann = info.annId ? annList().find(a => a.id === info.annId) : null;
+  const py = info.py || wordPy(word);
+  let defsH = '', last = '';
+  for (const d of lookup(word)) { if (d.src !== last) { defsH += `<div class="src">${d.src}</div>`; last = d.src; } defsH += `<div>${d.p ? `<span class="pyl">${esc(d.p)}</span>` : ''}${d.pos ? `<span class="tag">${esc(d.pos)}</span> ` : ''}${esc(d.defs.join('; '))}</div>`; }
+  const fix = info.fixId && PYCTX.find(f => f.id === info.fixId);
+  if (fix) defsH = `<div class="src">In this sentence</div><div><span class="pyl">${esc(fix.py)}</span>${esc(fix.mean || '')}</div>` + defsH;
+  if (!defsH) defsH = `<div class="status">${dictReady ? T('no_dict') : T('dict_loading')}${CAN_WRITE ? ' Use “Set meaning” to add your own.' : ''}</div>`;
+  const charsH = (word.length > 1 && word.length <= 6 && [...word].every(isHan)) ? `<div class="chars">${[...word].map(c => `<b>${esc(c)}</b> ${esc((shortMeaning(c) || '').split(';')[0])}`).join(' · ')}</div>` : '';
+  let h = `<div class="ph"><span class="pz">${esc(zhDisp(word))}</span><span class="pp">${esc(py)}</span><span class="pzy">${esc(splitPinyin(py).map(zyOf).join(' '))}</span>
+    <span class="spacer"></span><button class="ghost" data-pop="say" aria-label="Read aloud">🔊</button></div><div class="defs">${defsH}</div>${charsH}`;
+  if (info.wb && info.wbCur === 'y') h += `<div class="status" style="margin-top:6px">老師解釋 Your explanation</div><div class="rt pop-note" contenteditable="true" spellcheck="false" data-pop="wbnote" id="wbNote" data-ph="Explain it for the student…">${esc(info.wbNote || '')}</div>`;
+  if (info.wb) h += `<div class="hl-pick">${HL_CATS.map(([c, zh, en]) => `<button class="swl${info.wbCur === c ? ' on' : ''}" data-pop="wbhl" data-c="${c}" title="${en}"><i class="sw ${c}"></i>${zh}</button>`).join('')}${info.wbCur ? '<button class="swl" data-pop="wbhl" data-c=""><i class="sw" style="background:transparent;border:1px dashed var(--muted)"></i>清除螢光筆</button>' : ''}</div>`;
+  if (k && (CAN_WRITE || STUDENT)) {
+    if (ann && ann.t !== word) h += `<div class="phrase">Highlighted: <b>${esc(ann.t)}</b></div>`;
+    h += `<div class="hl-pick">${HL_CATS.map(([c, zh, en]) => `<button class="swl${ann && ann.c === c ? ' on' : ''}" data-pop="c" data-c="${c}" title="${en}"><i class="sw ${c}"></i>${zh}</button>`).join('')}</div><div class="row">
+      ${ann ? `<button class="ghost" data-pop="rm" style="margin-left:auto;font-size:13px">${T('remove')}</button>` : `<span class="status" style="margin-left:4px">${T('hl')}</span>`}</div>
+      <div class="rt pop-note" contenteditable="true" spellcheck="false" data-pop="note" id="popNote" data-rtkey="popNote" data-ph="${STUDENT ? T('note_ph') : '老師解釋 · Explain it for the student…'}">${ann && (ann.note || ann.noteH) ? rtFrom(ann.note, ann.noteH) : ''}</div>`;
+  } else if (ann && ann.note) h += `<div class="phrase">${richPlain(ann.note, ann.noteH)}</div>`;
+  if (CAN_WRITE) h += `<div class="foot"><button data-pop="mean">Set meaning</button>${[...word].every(isHan) ? `<button data-pop="py">${PYFIX[word] || info.fixId ? 'Pinyin fixed ✓' : 'Fix pinyin'}</button>` : ''}${info.sel && [...word].every(isHan) ? '<button data-pop="word">Treat as one word</button>' : ''}</div>`;
+  // meanings are translated into the chosen language automatically (see "automatic translation")
+  const pop = document.createElement('div'); pop.className = 'pop'; pop.innerHTML = h; document.body.appendChild(pop);
+  paintAllLive(pop);
+  const pw = pop.offsetWidth, ph = pop.offsetHeight;
+  let x = rect.left + rect.width / 2 - pw / 2, y = rect.bottom + 8;
+  if (y + ph > innerHeight - 8) y = Math.max(8, rect.top - ph - 8);
+  pop.style.left = Math.max(8, Math.min(x, innerWidth - pw - 8)) + 'px'; pop.style.top = y + 'px';
+}
+function modal(html) {
+  closeModal(); const bg = document.createElement('div'); bg.className = 'modal-bg'; bg.innerHTML = html; document.body.appendChild(bg);
+  bg.addEventListener('mousedown', e => { bg._down = e.target === bg; });
+  bg.addEventListener('click', e => { if ((e.target === bg && bg._down) || e.target.closest('[data-close]')) closeModal(); });
+  return bg;
+}
+function closeModal() { $$('.modal-bg').forEach(m => m.remove()); }
+function askConfirm(title, msg, okLabel, danger) {
+  return new Promise(res => {
+    const bg = modal(`<div class="modal sm"><div class="mh">${esc(title)}</div><div class="mb"><p>${msg}</p></div><div class="mf"><button data-close>Cancel</button><button class="primary" id="cfOk" ${danger ? 'style="background:var(--bad);border-color:var(--bad)"' : ''}>${esc(okLabel)}</button></div></div>`);
+    let done = false; $('#cfOk').onclick = () => { done = true; closeModal(); res(true); };
+    new MutationObserver((m, o) => { if (!bg.isConnected) { o.disconnect(); if (!done) res(false); } }).observe(document.body, { childList: true });
+  });
+}
+function askText(title, label, value) {
+  return new Promise(res => {
+    const bg = modal(`<div class="modal sm"><div class="mh">${esc(title)}</div><div class="mb"><div class="field"><label for="atIn">${esc(label)}</label><input id="atIn" value="${esc(value || '')}"></div></div><div class="mf"><button data-close>Cancel</button><button class="primary" id="atOk">Save</button></div></div>`);
+    const inp = $('#atIn'); inp.focus(); inp.select(); let done = false;
+    const ok = () => { done = true; const v = inp.value; closeModal(); res(v); };
+    $('#atOk').onclick = ok; inp.onkeydown = e => { if (e.key === 'Enter') ok(); };
+    new MutationObserver((m, o) => { if (!bg.isConnected) { o.disconnect(); if (!done) res(null); } }).observe(document.body, { childList: true });
+  });
+}
+let toastT;
+function toast(msg) { $$('.toast').forEach(t => t.remove()); const t = document.createElement('div'); t.className = 'toast'; t.setAttribute('role', 'status'); t.textContent = msg; document.body.appendChild(t); clearTimeout(toastT); toastT = setTimeout(() => t.remove(), 2600); }
+function busy(msg) { const b = document.createElement('div'); b.className = 'busy'; b.innerHTML = `<div>${esc(msg)}</div>`; document.body.appendChild(b); return () => b.remove(); }
+function loadScript(src) { return new Promise((res, rej) => { const s = document.createElement('script'); s.src = src; s.onload = res; s.onerror = rej; document.head.appendChild(s); }); }
+const MEAN_CACHE = new Map();
+async function newWordMeaning(word, sentence) {
+  word = String(word || '').trim(); if (!word) return '';
+  const key = word + '\u0001' + (sentence || ''); if (MEAN_CACHE.has(key)) return MEAN_CACHE.get(key);
+  const v = LEX.vocabMap.get(word); if (v && v.e) { MEAN_CACHE.set(key, v.e); return v.e; }
+  if (GLOSS[word]) return GLOSS[word];
+  const d = DICT.get(word); const defs = d ? [...new Set(d.flatMap(e => e.d))].slice(0, 14) : [];
+  let out = defs[0] || '';
+  const ctx = String(sentence || '').trim();
+  if (SAMPLE && ctx && ctx !== word && defs.length !== 1) {
+    try {
+      const r = await SAMPLE.json(`A Mandarin teacher marked the word 「${word}」 as a new word for an English-speaking student.\nSentence: ${ctx}\n${defs.length ? `Dictionary senses: ${defs.join(' | ')}\nChoose the sense that fits this sentence.` : 'Give its meaning in this sentence.'}\nReply as JSON {"mean": "<2–6 English words>"}.`, { modelTier: 'quick' });
+      if (r && r.mean) out = String(r.mean).trim().slice(0, 60);
+    } catch (e) {}
+  }
+  if (!out) out = (phraseMeaning(word) || '').split(/[;；]/)[0].trim();
+  MEAN_CACHE.set(key, out); return out;
+}
+async function fillBoxMeanings(box) {
+  if (!box || !box.isConnected) return;
+  const lines = edLines(box); const jobs = [];
+  lines.forEach(rs => { const sent = rs.map(r => r.t).join(''); rs.forEach(r => { if (r.h === 'g' && !r.m && r.t.trim()) jobs.push({ r, sent }); }); });
+  if (!jobs.length) return;
+  for (const j of jobs) j.mean = await newWordMeaning(j.r.t.trim(), j.sent);
+  if (!box.isConnected) return;
+  if (box.id === 'tkDoc') {
+    const now = edLines(box);
+    now.forEach(rs => rs.forEach(r => { if (r.h === 'g' && !r.m) { const j = jobs.find(x => x.r.t === r.t && x.mean); if (j) r.m = j.mean; } }));
+    wbApply(box, now); saveTalkDoc(linesText(now), linesHtml(now));
+  } else {
+    $$('mark.f-hl.hl-g:not([data-m]), [style*="background"]', box).forEach(el => { if (hlOf(el) !== 'g' || el.dataset.m) return; const j = jobs.find(x => x.r.t === el.textContent && x.mean); if (j) el.setAttribute('data-m', j.mean); });
+    box.dispatchEvent(new Event('input', { bubbles: true }));
+  }
+}
+const exPunct = t => String(t || '').trim().replace(/\s+/g, '').replace(/([\p{Script=Han}」』])\s*[,，．.·・‧､]\s*(?=[\p{Script=Han}「『])/gu, '$1，').replace(/[.．·・‧]$/u, '。').replace(/,/g, '，').replace(/!/g, '！').replace(/\?/g, '？');
+function phraseMeaning(t) {
+  const m = shortMeaning(t); if (m) return m;
+  return segment(t).filter(x => x.han).map(x => { const w = t.slice(x.s, x.e); const mm = (shortMeaning(w) || '').split(/[;；]/)[0].trim(); return mm ? `${w} ${mm}` : w; }).join(' · ');
+}
+function zyColPdf(py, hl) {
+  if (!py) return `<span class="zv zvp${hl}"></span>`;
+  const { tone, plain } = sylInfo(py); const syms = [...toZhuyin(plain, 1)]; const mark = tone >= 2 && tone <= 4 ? ZY_TONE[tone] : '';
+  return `<span class="zv zvp${hl}"><span class="zs">${tone === 5 ? '<i class="zn">˙</i>' : ''}${syms.map(x => `<b>${x}</b>`).join('')}</span>${mark ? `<i class="zt2">${mark}</i>` : ''}</span>`;
+}
+function pdfZh(text, k, withPy, anns, cols) {
+  text = zhPunct(text); const DSP = zhDisp(text);
+  const cl = i => cols && cols[i] ? ' ' + cols[i] : '';
+  const toks = segment(text); const py = charPinyin(text); let h = '';
+  const mine = k ? anns.filter(a => a.k === k) : [];
+  for (const t of toks) {
+    const seg = text.slice(t.s, t.e);
+    const cover = mine.filter(a => a.s < t.e && a.e > t.s);
+    const hl = cover.length ? ` hl-${cover[cover.length - 1].c}` : '';
+    let inner = '';
+    // With pinyin stacked, the highlight goes on each character box (a highlight on the outer span paints over the text in the PDF renderer)
+    if (t.han) for (let n = 0; n < seg.length; n++) inner += withPy && UI.py === 'zy' ? `<span class="c zy"><span class="h${hl}${cl(t.s + n)}">${esc(DSP[t.s + n])}</span>${zyColPdf(py[t.s + n], hl)}</span>` : withPy ? `<span class="c"><span class="r">${esc(pyLabel(py[t.s + n]) || ' ')}</span><span class="h${hl}${cl(t.s + n)}">${esc(DSP[t.s + n])}</span></span>` : cols && cols[t.s + n] ? `<span class="${cols[t.s + n]}">${esc(DSP[t.s + n])}</span>` : esc(DSP[t.s + n]);
+    else if (withPy) { let at = t.s; inner = seg.split(/(\s+)/).filter(Boolean).map(p => { const c0 = at; at += p.length; return /^\s+$/.test(p) ? ' ' : `<span class="c"><span class="r"> </span><span class="h${cl(c0)}">${esc(DSP.slice(c0, c0 + p.length))}</span></span>`; }).join(''); }
+    else if (cols) { inner = ''; for (let i = t.s; i < t.e;) { let j = i + 1; while (j < t.e && cols[j] === cols[i]) j++; inner += cols[i] ? `<span class="${cols[i]}">${esc(DSP.slice(i, j))}</span>` : esc(DSP.slice(i, j)); i = j; } }
+    else inner = esc(DSP.slice(t.s, t.e));
+    // with pinyin / 注音, one highlight band wraps the whole word (no gaps between characters)
+    h += withPy ? inner : `<span class="t${hl}">${inner}</span>`;
+    for (const a of mine) if (a.note && a.e > t.s && a.e <= t.e && NOTE_NUM.get(a.id)) h += `<sup class="nm">${NOTE_NUM.get(a.id)}</sup>`;
+    for (const a of mine) if (a.c === 'g' && a.mean && a.e > t.s && a.e <= t.e) h += `<span class="hl-mean">${esc(a.mean)}</span>`;
+  }
+  return `<span class="zt${withPy ? ' wp' : ''}">${h}</span>`;
+}
+const todayISO = () => { const d = new Date(); return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10); };
+const tdText = s => HAN.test(s) ? renderZh(s, '') : esc(s);
+const TD_WORD = /(^|[，,、；;。！？!?\s])([\p{Script=Han}·]{1,4})[ \t]*[:：\-–—|]?[ \t]*([A-Za-z][A-Za-z'’ \-]*[A-Za-z])/gu;
+function tdWords(t) { const out = []; for (const m of String(t).matchAll(TD_WORD)) { const s0 = m.index + m[1].length; out.push({ s: s0, e: m.index + m[0].length, w: m[2], mean: m[3].trim() }); } return out; }
+const HL_CATS = [['g', '新生詞', 'New word'], ['p', '發音加強', 'Pronunciation'], ['b', '舊生詞忘記', 'Forgot (old word)'], ['y', '一般畫記', 'Highlight']];
+const hlCat = c => HL_CATS.find(x => x[0] === c) || HL_CATS[3];
+const HL_HEX = { y: '#ffe17a', g: '#c4ecc4', p: '#ffcfd9', b: '#c8e2f0' };
+function hlOf(n) {
+  const m = (n.className && typeof n.className === 'string') ? n.className.match(/\bhl-([ygpb])\b/) : null; if (m && /\bf-hl\b/.test(n.className)) return m[1];
+  const bgc = n.style && n.style.backgroundColor; if (!bgc) return null;
+  const rgb = (bgc.match(/\d+(\.\d+)?/g) || []).map(Number); if (rgb.length < 3 || rgb[3] === 0 || /transparent/.test(bgc)) return '';
+  let best = '', d0 = 1e9; for (const [c, hx] of Object.entries(HL_HEX)) { const v = [1, 3, 5].map(i => parseInt(hx.slice(i, i + 2), 16)); const d = v.reduce((s, x, i) => s + (x - rgb[i]) ** 2, 0); if (d < d0) { d0 = d; best = c; } }
+  return d0 < 6000 ? best : null;
+}
+function edLines(root) {
+  const lines = [[]]; const cur = () => lines[lines.length - 1];
+  const walk = (node, f) => {
+    for (const n of node.childNodes) {
+      if (n.nodeType === 3) { const t = n.nodeValue.replace(/ /g, ' ').replace(/[\r\n]+/g, ' '); if (t) cur().push({ t, ...f }); continue; }
+      if (n.nodeType !== 1) continue;
+      const tag = n.tagName;
+      if (tag === 'RT' || tag === 'RP' || tag === 'SUP' || (n.classList && (n.classList.contains('zv') || n.classList.contains('nm') || n.classList.contains('hl-mean') || n.classList.contains('hl-note')))) continue;   // pinyin / 注音 / note numbers drawn by the app
+      if (tag === 'BR') { if (!(n === n.parentNode.lastChild && n.parentNode !== root && n.previousSibling)) lines.push([]); continue; }
+      const block = /^(DIV|P|LI|H[1-6]|BLOCKQUOTE)$/.test(tag);
+      if (block && cur().length) lines.push([]);
+      const st = n.style || {}; const dec = (st.textDecoration || '') + ' ' + (st.textDecorationLine || '');
+      const hv = hlOf(n);
+      walk(n, { b: f.b || /^(B|STRONG)$/.test(tag) || /bold|[6-9]00/.test(st.fontWeight || ''), u: f.u || tag === 'U' || /underline/.test(dec), s: f.s || /^(S|STRIKE|DEL)$/.test(tag) || /line-through/.test(dec), h: hv === null ? f.h : hv, m: hv === null ? f.m : (n.dataset && n.dataset.m) || '', n: hv === null ? f.n : (n.dataset && n.dataset.n) || '' });
+      if (block && cur().length) lines.push([]);
+    }
+  };
+  walk(root, { b: false, u: false, s: false, h: '', m: '', n: '' });
+  while (lines.length > 1 && !lines[lines.length - 1].length) lines.pop();
+  return lines.map(rs => rs.reduce((a, r) => { const l = a[a.length - 1]; if (l && l.b === r.b && l.u === r.u && l.s === r.s && (l.h || '') === (r.h || '') && (l.m || '') === (r.m || '') && (l.n || '') === (r.n || '')) l.t += r.t; else a.push({ ...r }); return a; }, []));
+}
+const linesText = lines => lines.map(rs => rs.map(r => r.t).join('')).join('\n');
+const linesHtml = lines => lines.map(rs => `<div>${rs.length ? rs.map(r => { let x = esc(r.t); if (r.s) x = `<s>${x}</s>`; if (r.u) x = `<u>${x}</u>`; if (r.b) x = `<b>${x}</b>`; if (r.h) x = `<mark class="f-hl hl-${r.h}"${r.h === 'g' && r.m ? ` data-m="${esc(r.m)}"` : ''}${r.h === 'y' && r.n ? ` data-n="${esc(r.n)}"` : ''}>${x}</mark>`; return x; }).join('') : '<br>'}</div>`).join('');
+function docLines(D) {
+  if (D && D.html) { try { return edLines(new DOMParser().parseFromString(`<body>${D.html}</body>`, 'text/html').body); } catch (e) {} }
+  return String(D?.said || '').split('\n').map(l => l ? [{ t: l, b: false, u: false, s: false }] : []);
+}
+function tdLine(runs, o = {}) {
+  const ch = [], fm = [];
+  for (const r of runs) for (const c of r.t.split('')) { ch.push(c); fm.push(r); }
+  const plain = ch.join(''); const n = ch.length; if (!plain.trim()) return '';
+  const hide = new Array(n).fill(false), mark = new Array(n).fill(false), side = new Array(n).fill(''), word = new Array(n).fill('');
+  let depth = 0;
+  for (let i = 0; i < n; i++) { if (ch[i] === '[') { depth++; hide[i] = true; } else if (ch[i] === ']' && depth) { depth--; hide[i] = true; } else if (depth) mark[i] = true; }
+  // ( ) = a part that can be ignored: shown light grey, never a new word
+  const ign = new Array(n).fill(false); { let pd = 0; for (let i = 0; i < n; i++) { if (ch[i] === '(' || ch[i] === '（') pd++; if (pd) ign[i] = true; if ((ch[i] === ')' || ch[i] === '）') && pd) pd--; } }
+  const am = null; let arrowAt = -1;
+  if (am) {
+    arrowAt = am.index;
+    for (let i = 0; i < n; i++) side[i] = i < am.index ? 'w' : i >= am.index + am[0].length ? 'r' : (hide[i] = true, '');
+  }
+  for (const x of tdWords(plain)) {
+    let clash = false; for (let i = x.s; i < x.e; i++) if (mark[i] || hide[i] || ign[i]) clash = true;
+    if (!clash) for (let i = x.s; i < x.e; i++) word[i] = i < x.s + x.w.length ? 'h' : 'e';
+  }
+  const brk = new Array(n).fill(false);
+  if (o.edit) for (let i = 0; i < n; i++) if (hide[i]) { brk[i] = true; hide[i] = false; }
+  const show = i => !hide[i] && !(o.noWords && word[i]);
+  if (o.noWords && !ch.some((c, i) => show(i) && /[\p{Script=Han}A-Za-z0-9]/u.test(c))) return '';
+  // in the PDF a highlight goes on each character box (a background on the outer span paints over the text there)
+  const pieceHtml = (t, hl) => o.pdf ? (HAN.test(t) ? (hl ? pdfZh(t, 'w', o.py, [{ k: 'w', s: 0, e: t.length, c: hl }]) : pdfZh(t, '', o.py, [])) : hl ? `<span class="hl-${hl}">${esc(t)}</span>` : esc(t)) : tdText(t);
+  let h = '', i = 0, arrowDone = false;
+  while (i < n) {
+    if (!show(i)) { if (i === arrowAt + 0 && arrowAt >= 0 && !arrowDone) { h += '<span class="td-arrow">→</span>'; arrowDone = true; } i++; continue; }
+    const key = k => [fm[k].b, fm[k].u, fm[k].s, fm[k].h || '', fm[k].m || '', fm[k].n || '', mark[k], side[k], word[k], brk[k], ign[k]].join();
+    let j = i + 1; while (j < n && show(j) && key(j) === key(i)) j++;
+    const cls = [fm[i].b && 'f-b', fm[i].u && 'f-u', fm[i].s && 'f-s', mark[i] && 'f-m', side[i] === 'w' && 'td-wrong', side[i] === 'r' && 'td-right', word[i] === 'h' && 'td-word', word[i] === 'e' && 'td-en', fm[i].h && !o.pdf && (!ign[i] || o.edit) && 'f-hl hl-' + fm[i].h, brk[i] && 'td-br', ign[i] && 'td-ign'].filter(Boolean);
+    const t = ch.slice(i, j).join('');
+    const hOn = !ign[i] ? fm[i].h : '';
+    const dm = (fm[i].h === 'g' && fm[i].m && !o.pdf ? ` data-m="${esc(fm[i].m)}"` : '') + (fm[i].h === 'y' && fm[i].n && !o.pdf ? ` data-n="${esc(fm[i].n)}"` : '');
+    h += cls.length ? `<span class="${cls.join(' ')}"${dm}>${pieceHtml(t, hOn)}</span>` : pieceHtml(t, hOn);
+    if (fm[i].h === 'g' && fm[i].m && (j >= n || fm[j] !== fm[j - 1])) h += `<span class="hl-mean"${o.edit ? ' contenteditable="false"' : ''}>${esc(fm[i].m)}</span>`;
+    if (fm[i].h === 'y' && fm[i].n && (j >= n || fm[j] !== fm[j - 1])) h += `<span class="hl-note"${o.edit ? ' contenteditable="false"' : ''}>✎ ${esc(fm[i].n)}</span>`;
+    i = j;
+  }
+  if (arrowAt >= 0 && !arrowDone && !o.edit) h = h.replace(/(<span class="td-right)/, '<span class="td-arrow">→</span>$1');
+  return h;
+}
+function docViewHtml(D) {
+  const lines = docLines(D);
+  return lines.map(rs => { const h = tdLine(rs); return h ? `<div class="td-l">${h}</div>` : '<div class="td-l td-gap"></div>'; }).join('');
+}
+function talkSort(items) {
+  const words = [], seen = new Set();
+  const addWord = (w, mean) => { w = w.trim(); if (!w || seen.has(w)) return; seen.add(w); words.push({ w, mean: (mean || '').trim() }); };
+  for (const t of items) {
+    if (t.kind === 'word') { addWord(t.said, t.fix); continue; }
+    if (t.kind !== 'doc') continue;
+    for (const line of String(t.said || '').split('\n')) for (const part of line.split(/(\[[^\]\n]*\]|[(（][^)）\n]*[)）])/)) if (!/^\[.*\]$|^[(（].*[)）]$/.test(part)) for (const x of tdWords(part)) addWord(x.w, x.mean);
+  }
+  return { words };
+}
+const wbHtml = lines => (lines.length ? lines : [[]]).map(rs => { const h = rs.length ? tdLine(rs, { edit: true }) : ''; return `<div class="td-l">${h || '<br>'}</div>`; }).join('');
+const WB_SKIP = 'rt, rp, .zv, sup, .hl-mean, .hl-note';
+function wbLock(ed) { $$(WB_SKIP, ed).forEach(x => x.setAttribute('contenteditable', 'false')); }
+function wbCaret(ed) {          // {line, ch}: which line and how many typed characters before the cursor
+  const sel = getSelection(); if (!sel.rangeCount || !ed.contains(sel.anchorNode)) return null;
+  const r = sel.getRangeAt(0); let line = r.endContainer; while (line && line.parentNode !== ed) line = line.parentNode;
+  if (!line) return null; const li = [...ed.childNodes].indexOf(line);
+  const pre = document.createRange(); pre.setStart(line, 0); pre.setEnd(r.endContainer, r.endOffset);
+  const box = document.createElement('div'); box.appendChild(pre.cloneContents()); $$(WB_SKIP, box).forEach(x => x.remove());
+  return { line: li, ch: box.textContent.length };
+}
+function wbSetCaret(ed, pos) {
+  if (!pos) return; const line = ed.childNodes[Math.min(pos.line, ed.childNodes.length - 1)]; if (!line) return;
+  const tw = document.createTreeWalker(line, NodeFilter.SHOW_TEXT, { acceptNode: n => n.parentElement.closest(WB_SKIP) ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT });
+  let left = pos.ch, node, last = null;
+  while ((node = tw.nextNode())) { last = node; if (left <= node.nodeValue.length) break; left -= node.nodeValue.length; }
+  const r = document.createRange();
+  if (node) r.setStart(node, left); else if (last) r.setStart(last, last.nodeValue.length); else r.setStart(line, 0);
+  r.collapse(true); const sel = getSelection(); sel.removeAllRanges(); sel.addRange(r);
+}
+function wbPos(ed, node, off) {   // {line, ch} for a point inside the whiteboard
+  let line = node; while (line && line.parentNode !== ed) line = line.parentNode;
+  if (!line) return { line: 0, ch: 0 };
+  const pre = document.createRange(); pre.setStart(line, 0); pre.setEnd(node, off);
+  const box = document.createElement('div'); box.appendChild(pre.cloneContents()); $$(WB_SKIP, box).forEach(x => x.remove());
+  return { line: [...ed.childNodes].indexOf(line), ch: box.textContent.length };
+}
+function wbNoteOf(wb) { const ed = $('#tkDoc'); if (!ed) return ''; let at = 0; for (const r of edLines(ed)[wb.a.line] || []) { if (at + r.t.length > wb.a.ch && r.h === 'y') return r.n || ''; at += r.t.length; } return ''; }
+function wbSetNote(wb, note) {     // the 一般畫記 explanation, kept on the marked words
+  const ed = $('#tkDoc'); if (!ed) return; const lines = edLines(ed);
+  for (let li = wb.a.line; li <= wb.b.line && li < lines.length; li++) { let at = 0; const from = li === wb.a.line ? wb.a.ch : 0, to = li === wb.b.line ? wb.b.ch : 1e9;
+    for (const r of lines[li]) { const s0 = at; at += r.t.length; if (r.h === 'y' && at > from && s0 < to) r.n = note; } }
+  wbApply(ed, lines); saveTalkDoc(linesText(lines), linesHtml(lines));
+}
+function wbHighlight(wb, c) {        // colour (or clear) the text between wb.a and wb.b, then redraw and save
+  const ed = $('#tkDoc'); if (!ed || !wb) return;
+  const lines = edLines(ed);
+  for (let li = wb.a.line; li <= wb.b.line && li < lines.length; li++) {
+    const from = li === wb.a.line ? wb.a.ch : 0, to = li === wb.b.line ? wb.b.ch : 1e9; const out = []; let at = 0;
+    for (const r of lines[li]) {
+      const s0 = at, e0 = at + r.t.length; at = e0;
+      const a = Math.max(s0, from), b = Math.min(e0, to);
+      if (a >= b) { out.push(r); continue; }
+      if (a > s0) out.push({ ...r, t: r.t.slice(0, a - s0) });
+      out.push({ ...r, t: r.t.slice(a - s0, b - s0), h: c, m: c === 'g' && r.h === 'g' ? r.m : '', n: c === 'y' && r.h === 'y' ? r.n : '' });
+      if (b < e0) out.push({ ...r, t: r.t.slice(b - s0) });
+    }
+    lines[li] = out;
+  }
+  ed.innerHTML = wbHtml(lines); wbLock(ed);
+  saveTalkDoc(linesText(lines), linesHtml(lines));
+  toast(c ? `標記為 ${hlCat(c)[1]} Marked` : '已清除螢光筆 Highlight removed');
+  if (c === 'g') fillBoxMeanings(ed);
+}
+let WB_T = null, WB_COMPOSING = false;
+function wbSchedule(ed) { clearTimeout(WB_T); WB_T = setTimeout(() => wbRedraw(ed), 650); }
+function wbRedraw(ed) {
+  if (!ed || !ed.isConnected) return; if (WB_COMPOSING) return wbSchedule(ed);
+  wbApply(ed, edLines(ed));
+}
+function wbApply(ed, lines) {       // redraw the whiteboard from lines, keeping the cursor where it was
+  const h = wbHtml(lines); if (h === ed.innerHTML) return;
+  const focused = document.activeElement === ed; const pos = focused ? wbCaret(ed) : null; const top = ed.scrollTop;
+  ed.innerHTML = h; wbLock(ed); ed.scrollTop = top; if (focused) wbSetCaret(ed, pos);
+}
+
+/* =========================================================
+   螢光筆暴走 Highlighter Gone Wild — a class whiteboard for Mandarin teachers
+   Type while the student talks: pinyin / 注音 appear as you type, mark words with four highlighter
+   colours, click a word for the dictionary, then export a tidy PDF for the student.
+   Data: each teacher's own pages and students. On claude.ai they are kept in the teacher's private
+   space of this artifact's database (data/users/<id>); anywhere else they stay in this browser.
+   ========================================================= */
+const HGW_VER = 'v1';
+let CAN_WRITE = false, STUDENT = false, READY = false;
+const NOTE_NUM = new Map();
+let SAMPLE = null, DB = null, DL = null, USER_ID = null, MODE = 'local';
+const T = k => ({ no_dict: '字典裡沒有這個詞 Not in the dictionary.', dict_loading: '字典載入中… Loading the dictionary…', remove: 'Remove', hl: '', note_ph: '' })[k] || k;
+const annList = () => [], resolvedAnns = () => [], paintAllLive = () => {}, rebuildLexicon = () => {};
+const saveUI = () => lsSet(UI_KEY, UI);
+function speak(text) {
+  if (!('speechSynthesis' in window)) return toast('這個瀏覽器不能朗讀 Read-aloud isn’t available here');
+  speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(text); u.lang = 'zh-TW'; u.rate = 0.85;
+  const vs = speechSynthesis.getVoices(); const v = vs.find(v => /zh[-_]TW/i.test(v.lang)) || vs.find(v => /^zh/i.test(v.lang)); if (v) u.voice = v;
+  speechSynthesis.speak(u);
+}
+
+/* ---------------- storage: one document per page / student ---------------- */
+const DATA_LOCAL = 'hgw-data-v1';
+const DOCS = new Map();                         // 'page_x' → page, 'stu_x' → student, 'ex_<stu>' → example sentences
+const docsOf = kind => [...DOCS.entries()].filter(([id]) => id.startsWith(kind + '_')).map(([id, d]) => ({ id, ...d }));
+const saveT = {};
+function putDoc(id, obj) {
+  if (obj === null) DOCS.delete(id); else DOCS.set(id, obj);
+  if (MODE !== 'cloud') { lsSet(DATA_LOCAL, Object.fromEntries(DOCS)); return; }
+  clearTimeout(saveT[id]); saveT[id] = setTimeout(() => cloudWrite(id, obj), 400);
+}
+async function cloudWrite(id, obj) {
+  try { const ref = DB.doc(`data/users/${USER_ID}/${id}`); if (obj === null) await ref.delete(); else await ref.set(obj); }
+  catch (e) { toast('沒有存到 Couldn’t save: ' + (e?.message || e?.code || 'unknown error')); }
+}
+async function connect() {
+  try { if (window.claude?.use) { DB = await window.claude.use('db'); const user = await window.claude.use('user'); USER_ID = user ? await user.id() : null; } } catch (e) { DB = null; }
+  try { DL = window.claude?.use ? await window.claude.use('downloads') : null; } catch (e) { DL = null; }
+  try { SAMPLE = window.claude?.use ? await window.claude.use('sample') : null; } catch (e) { SAMPLE = null; }
+  if (DB && USER_ID) {
+    try { const s = await DB.collection('data/users/' + USER_ID).get(); for (const d of s.docs) DOCS.set(d.id, d.data()); MODE = 'cloud'; } catch (e) { MODE = 'local'; }
+  }
+  if (MODE === 'local') { const d = lsGet(DATA_LOCAL) || {}; for (const [k, v] of Object.entries(d)) DOCS.set(k, v); }
+  const chip = $('#syncChip');
+  chip.textContent = MODE === 'cloud' ? '☁ 存在你的帳號 Saved to your account' : '💾 存在這個瀏覽器 Saved in this browser';
+  chip.title = MODE === 'cloud' ? 'Only you can see your pages and students.' : 'Your pages stay in this browser on this computer. Use ⚙ → Backup to keep a copy.';
+  if (MODE === 'cloud') chip.classList.add('ok');
+  READY = true;
+  if (UI.page && !DOCS.has(UI.page)) UI.page = null;
+  render();
+}
+
+/* ---------------- students & pages ---------------- */
+const STU_MODES = [['none', '不用學生', 'No students — just open a page'], ['name', '簡單版', 'Type the student’s name; pages are kept by date'], ['full', '完整版', 'Student background, so Claude can write example sentences about their life']];
+const stuMode = () => UI.stuMode || 'name';
+const students = () => docsOf('stu').sort((a, b) => a.name.localeCompare(b.name));
+const stuOf = id => (id && DOCS.get(id)) ? { id, ...DOCS.get(id) } : null;
+function dayFor(tz) { try { return new Intl.DateTimeFormat('en-CA', { year: 'numeric', month: '2-digit', day: '2-digit', timeZone: tz || undefined }).format(new Date()); } catch (e) { return todayISO(); } }
+const pages = () => docsOf('page').sort((a, b) => (b.created || b.at || 0) - (a.created || a.at || 0));
+const curPage = () => UI.page && DOCS.get(UI.page) ? { id: UI.page, ...DOCS.get(UI.page) } : null;
+function openPage(id) { UI.page = id; saveUI(); closePop(); render(); setTimeout(() => { const ed = $('#tkDoc'); if (ed) { ed.focus(); const r = document.createRange(); r.selectNodeContents(ed); r.collapse(false); const s = getSelection(); s.removeAllRanges(); s.addRange(r); } }, 0); }
+function newPage(st) {
+  const id = 'page_' + uid();
+  putDoc(id, { sid: st ? st.id : '', name: st ? st.name : '', date: dayFor(st && st.tz), html: '', said: '', created: Date.now(), at: Date.now() });
+  openPage(id);
+}
+function startWith(name) {
+  name = String(name || '').trim(); if (!name) return toast('請輸入學生名字 Type the student’s name');
+  let st = students().find(s => s.name.trim().toLowerCase() === name.toLowerCase());
+  if (!st) { const id = 'stu_' + uid(); putDoc(id, { name, at: Date.now() }); st = { id, name }; }
+  const today = dayFor(st.tz);
+  const pg = pages().find(p => p.sid === st.id && p.date === today);
+  if (pg) openPage(pg.id); else newPage(st);
+}
+let WB_SAVE_T = null;
+function saveTalkDoc(text, html) {          // called by the whiteboard whenever it changes
+  const id = UI.page; const D = DOCS.get(id); if (!D) return;
+  D.said = clean(text); D.html = html; D.at = Date.now();
+  const el = $('#tdSaved'); if (el) el.textContent = '儲存中… Saving';
+  clearTimeout(WB_SAVE_T);
+  WB_SAVE_T = setTimeout(() => { putDoc(id, D); const e2 = $('#tdSaved'); if (e2) e2.textContent = '已儲存 Saved'; renderSide(); }, 600);
+}
+function tdChanged() {
+  const ed = $('#tkDoc'); if (!ed) return;
+  const lines = edLines(ed); saveTalkDoc(linesText(lines), linesHtml(lines));
+  wbSchedule(ed);
+}
+
+/* ---------------- screen ---------------- */
+function renderSide() {
+  const side = $('#side'); side.classList.toggle('hide', UI.side === false);
+  const sm = stuMode(); const f = UI.filter || '';
+  const list = pages().filter(p => !f || p.sid === f);
+  let h = `<div class="hgw-new"><button class="primary" data-act="newpage">＋ 新的一頁 New page</button></div>`;
+  if (sm !== 'none' && students().length) h += `<div class="hgw-filter"><select id="stuFilter" aria-label="Show pages of"><option value="">全部學生 All students</option>${students().map(s => `<option value="${s.id}" ${f === s.id ? 'selected' : ''}>${esc(s.name)}</option>`).join('')}</select></div>`;
+  let lastDate = '';
+  for (const p of list) {
+    if (p.date !== lastDate) { h += `<div class="hgw-date">${esc(p.date || '')}</div>`; lastDate = p.date; }
+    const first = String(p.said || '').split('\n').find(x => x.trim()) || '（空白 Empty）';
+    h += `<div class="lesson hgw-pg${p.id === UI.page ? ' on' : ''}" data-page="${p.id}"><div class="hgw-pn">${p.name ? `<b>${esc(p.name)}</b> · ` : ''}<span>${esc(first.slice(0, 22))}</span></div><button class="ghost hgw-del" data-delpage="${p.id}" title="Delete this page" aria-label="Delete">✕</button></div>`;
+  }
+  if (!list.length) h += `<p class="status" style="padding:8px 12px">還沒有任何一頁 No pages yet.</p>`;
+  h += `<div class="side-foot"><button class="ghost" data-act="help">怎麼用 How to use</button><button class="ghost" data-act="settings">⚙ 設定 Settings</button>${sm === 'full' ? '<button class="ghost" data-act="stus">學生資料 Students</button>' : ''}<div class="hgw-credit">螢光筆暴走 ${HGW_VER} · Made by 小嵐 Learn with Blue<br>Dictionary: <a href="https://www.mdbg.net/chinese/dictionary?page=cc-cedict" target="_blank" rel="noopener">CC-CEDICT</a> (CC BY-SA 4.0) · Pinyin: pinyin-pro (MIT)</div></div>`;
+  side.innerHTML = h;
+}
+function render() {
+  document.body.classList.remove('py-off', 'py-py', 'py-zy'); document.body.classList.add('py-' + (UI.py || 'py'));
+  document.documentElement.style.setProperty('--fs', (UI.fs || 24) + 'px');
+  $$('#pyMode button').forEach(b => b.classList.toggle('on', b.dataset.v === UI.py));
+  $$('#zhsMode button').forEach(b => b.classList.toggle('on', b.dataset.v === (UI.zhs ? 's' : 't')));
+  renderSide();
+  const inner = $('#inner'); if (!READY) return;
+  // typing right now: only redraw the whiteboard (pinyin, 繁／簡), never pull the page out from under the teacher
+  const ed0 = $('#tkDoc'); if (ed0 && document.activeElement === ed0 && curPage()) { wbApply(ed0, edLines(ed0)); return; }
+  const sm = stuMode(); const P = curPage();
+  let h = '';
+  if (sm !== 'none') h += `<div class="card hgw-stu"><label for="stuIn"><b>學生 Student</b></label><input id="stuIn" list="stuList" placeholder="輸入學生名字 Type the student’s name" autocomplete="off"><datalist id="stuList">${students().map(s => `<option value="${esc(s.name)}">`).join('')}</datalist><button class="primary" data-act="stustart">開始上課 Start</button></div>`;
+  if (!P) {
+    h += `<div class="empty"><div class="big">🖍 螢光筆暴走</div><p>${sm === 'none' ? '開一頁新的白板，就可以開始上課。 Open a new page to start.' : '輸入學生名字，按「開始上課」。 Type the student’s name and press Start.'}</p>${sm === 'none' ? '<button class="primary" data-act="newpage">＋ 新的一頁 New page</button>' : ''}<p class="status" style="margin-top:14px">第一次用？按左下角的「怎麼用 How to use」。</p></div>`;
+    inner.innerHTML = h; $('#crumb').textContent = ''; return;
+  }
+  const st = stuOf(P.sid);
+  $('#crumb').textContent = `${P.name || ''}${P.name ? ' · ' : ''}${P.date || ''}`;
+  h += `<div class="card td-card">
+      <div class="td-head"><b style="font-family:var(--zh)">${P.name ? esc(P.name) + ' · ' : ''}${esc(P.date || '')}</b>${st && st.tz ? `<span class="status">${esc(st.tz)}</span>` : ''}<span class="spacer"></span><span class="status" id="tdSaved">${P.said ? '已儲存 Saved' : ''}</span></div>
+      <div id="tkDoc" class="td-ed td-wb rt" data-rtkey="tkDoc" contenteditable="true" spellcheck="false" role="textbox" aria-multiline="true" aria-label="Whiteboard" data-ph="開始打字… Start typing what the student says…">${wbHtml(docLines(P))}</div>
+      <p class="status td-help">🖍 選取或點一下字詞，標記 新生詞／發音加強／舊生詞忘記／一般畫記 &nbsp;·&nbsp; <span class="f-m">[ ]</span> 放錯位置 wrong place，例 <span style="font-family:var(--zh)">我[昨天]去了</span> &nbsp;·&nbsp; <span class="td-ign">( )</span> 可以忽略 can be ignored，例 <span style="font-family:var(--zh)">我(覺得)很好</span> &nbsp;·&nbsp; <span class="td-word">中文＋English</span> 直接寫成新生詞，例 <span style="font-family:var(--zh)">機場 airport</span></p>
+    </div>`;
+  inner.innerHTML = h;
+  { const wb = $('#tkDoc'); if (wb) wbLock(wb); }
+}
+
+/* ---------------- dialogs ---------------- */
+function settingsDialog() {
+  const sm = stuMode();
+  const bg = modal(`<div class="modal sm"><div class="mh">⚙ 設定 Settings</div><div class="mb">
+    <div class="field"><label>學生模式 Students</label>${STU_MODES.map(([v, zh, en]) => `<label class="chk" style="display:flex;gap:8px;align-items:flex-start;margin:6px 0"><input type="radio" name="sm" value="${v}" ${sm === v ? 'checked' : ''}><span><b>${zh}</b><br><span class="status">${en}</span></span></label>`).join('')}</div>
+    <div class="field"><label for="sigIn">PDF 署名 Your name or brand on the PDF</label><input id="sigIn" value="${esc(UI.sig || '')}" placeholder="例如 王老師華語 / Ms. Wang Mandarin"></div>
+    <div class="field"><label>PDF 間距 Spacing (pt)</label><div style="display:flex;gap:10px;flex-wrap:wrap">
+      <label class="status">拼音距漢字 <input type="number" step="0.5" min="0" max="12" id="gPy" value="${UI.gapPy ?? 1}" style="width:64px"></label>
+      <label class="status">注音距漢字 <input type="number" step="0.5" min="0" max="12" id="gZy" value="${UI.gapZy ?? 1.5}" style="width:64px"></label>
+      <label class="status">行距 Line gap <input type="number" step="1" min="0" max="30" id="gLn" value="${UI.gapLine ?? 5}" style="width:64px"></label></div></div>
+    <div class="field"><label>資料 Data</label><div style="display:flex;gap:8px;flex-wrap:wrap"><button data-act="backup">⬇ 下載備份 Backup</button><button data-act="restore">⬆ 還原備份 Restore</button></div></div>
+  </div><div class="mf"><button data-close>Cancel</button><button class="primary" id="setOk">Save</button></div></div>`);
+  bg.querySelector('#setOk').onclick = () => {
+    UI.stuMode = bg.querySelector('input[name=sm]:checked')?.value || 'name'; UI.sig = bg.querySelector('#sigIn').value.trim();
+    const num = (s, d) => { const v = parseFloat(bg.querySelector(s).value); return isFinite(v) ? v : d; };
+    UI.gapPy = num('#gPy', 1); UI.gapZy = num('#gZy', 1.5); UI.gapLine = num('#gLn', 5);
+    saveUI(); closeModal(); render();
+  };
+}
+const STU_FIELDS = [['name', '名字 Name'], ['level', '程度 Level', '例如 初級 A2 / HSK 3'], ['from', '國家、住在哪裡 From / lives', ''], ['work', '工作或學校 Work or study', ''], ['family', '家人 Family', ''], ['hobbies', '興趣 Hobbies', ''], ['goals', '為什麼學中文 Why learning Chinese', ''], ['notes', '其他 Notes', '']];
+function studentsDialog(sel) {
+  const list = students(); const cur = (sel && stuOf(sel)) || list[0] || null;
+  let tzs = []; try { tzs = Intl.supportedValuesOf('timeZone'); } catch (e) {}
+  const bg = modal(`<div class="modal"><div class="mh">學生資料 Students</div><div class="mb hgw-stus">
+    <div class="hgw-stul">${list.map(s => `<button class="${cur && s.id === cur.id ? 'primary' : 'ghost'}" data-stusel="${s.id}">${esc(s.name)}</button>`).join('') || '<p class="status">還沒有學生 No students yet.</p>'}<button data-stuadd>＋ 新增 Add</button></div>
+    ${cur ? `<div class="hgw-stuf">${STU_FIELDS.map(([k, lab, ph]) => `<div class="field"><label>${lab}</label>${k === 'name' || k === 'level' ? `<input data-sf="${k}" value="${esc(cur[k] || '')}" placeholder="${esc(ph || '')}">` : `<textarea rows="2" data-sf="${k}" placeholder="${esc(ph || '')}">${esc(cur[k] || '')}</textarea>`}</div>`).join('')}
+      <div class="field"><label>時區 Time zone（PDF 的日期用學生當地日期）</label><input data-sf="tz" list="tzList" value="${esc(cur.tz || '')}" placeholder="例如 Asia/Taipei"><datalist id="tzList">${tzs.map(z => `<option value="${z}">`).join('')}</datalist></div>
+      <p class="status">Claude 會依這些資料，幫新生詞寫跟學生生活有關的例句。 Claude uses this to write example sentences about the student’s life.</p>
+      <button class="ghost" data-studel="${cur.id}" style="color:var(--bad)">刪除這位學生 Delete student</button></div>` : ''}
+  </div><div class="mf"><button class="primary" data-close>完成 Done</button></div></div>`);
+  bg.addEventListener('input', e => { const k = e.target.dataset.sf; if (!k || !cur) return; const D = DOCS.get(cur.id); D[k] = e.target.value; D.at = Date.now(); putDoc(cur.id, D); if (k === 'name') renderSide(); });
+  bg.addEventListener('click', async e => {
+    const s = e.target.closest('[data-stusel]'); if (s) return studentsDialog(s.dataset.stusel);
+    if (e.target.closest('[data-stuadd]')) { const n = await askText('新增學生 New student', '名字 Name', ''); if (n && n.trim()) { const id = 'stu_' + uid(); putDoc(id, { name: n.trim(), at: Date.now() }); return studentsDialog(id); } return studentsDialog(cur && cur.id); }
+    const d = e.target.closest('[data-studel]'); if (d) { const st = stuOf(d.dataset.studel); if (await askConfirm('刪除學生？ Delete student?', `刪除 <b>${esc(st.name)}</b>？他的白板頁面會留著。 Their pages are kept.`, 'Delete', true)) { putDoc(st.id, null); putDoc('ex_' + st.id, null); } return studentsDialog(); }
+  });
+}
+function helpDialog() {
+  modal(`<div class="modal"><div class="mh">🖍 怎麼用 How to use</div><div class="mb hgw-help">
+    <p><b>1. 開始上課</b>　輸入學生名字按「開始上課」（或按「＋ 新的一頁」）。學生說話時，直接在白板上打字，停一下就會出現拼音或注音（上面可以切換 Off／Pinyin／注音、繁／簡、字的大小）。</p>
+    <p><b>2. 螢光筆四種顏色</b>　選取字詞（或點一下一個詞），選一種顏色：</p>
+    <p>${HL_CATS.map(([c, zh, en]) => `<span class="f-hl hl-${c}" style="padding:1px 6px;border-radius:4px">${zh}</span> <span class="status">${en}</span>`).join('　')}</p>
+    <p>標成<b>新生詞</b>，系統會自動配上英文意思${'（在 claude.ai 上用 Claude 依照句子挑最適合的意思）'}。<b>一般畫記</b>可以寫你的說明。</p>
+    <p><b>3. 三個小規則</b><br>• <span class="f-m">[ ]</span> 放錯位置的部分：我[昨天]去了<br>• <span class="td-ign">( )</span> 可以忽略的部分，PDF 會變淺灰：我(覺得)很好<br>• 中文後面直接打英文，就是新生詞：機場 airport</p>
+    <p><b>4. 點詞查字典</b>　點白板上的詞，會出現拼音、注音和英文解釋，🔊 可以朗讀。</p>
+    <p><b>5. 匯出 PDF</b>　按右上角 Export PDF。PDF 會依顏色分成表格（新生詞、忘記的舊生詞、發音加強、重點），加上今天的筆記。檔名是「日期 學生名字」。</p>
+    <p class="status">${MODE === 'cloud' ? '你的資料存在你的 claude.ai 帳號，只有你看得到。' : '你的資料存在這個瀏覽器。換電腦前請到 ⚙ 設定 → 下載備份。'}</p>
+  </div><div class="mf"><button class="primary" data-close>好 OK</button></div></div>`);
+}
+async function saveFile(name, blob) {
+  if (DL) return DL.save({ filename: name, data: blob });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
+}
+async function backup() {
+  try { await saveFile(`highlighter-backup-${todayISO()}.json`, new Blob([JSON.stringify({ app: 'highlighter-gone-wild', ver: 1, docs: Object.fromEntries(DOCS) })], { type: 'application/json' })); toast('備份好了 Backup saved'); }
+  catch (e) { if (e?.code !== 'declined') toast('沒有存到 Couldn’t save the backup'); }
+}
+async function restore(file) {
+  try {
+    const d = JSON.parse(await file.text()); const docs = d && d.docs; if (!docs || typeof docs !== 'object') throw new Error('not a backup');
+    if (!await askConfirm('還原備份？ Restore?', `加入備份裡的 ${Object.keys(docs).length} 筆資料（同一筆會被備份蓋過）。 Adds the pages and students from the backup.`, 'Restore')) return;
+    for (const [k, v] of Object.entries(docs)) if (/^(page|stu|ex)_[\w-]+$/.test(k) && v && typeof v === 'object') putDoc(k, v);
+    toast('還原好了 Restored'); render();
+  } catch (e) { toast('這不是備份檔 That isn’t a backup file'); }
+}
+
+/* ---------------- PDF ---------------- */
+function exportDialog() {
+  const P = curPage(); if (!P) return toast('先打開一頁 Open a page first');
+  const st = stuOf(P.sid); const canEx = stuMode() === 'full' && st && SAMPLE;
+  const bg = modal(`<div class="modal sm"><div class="mh">匯出 PDF Export PDF</div><div class="mb">
+    <label class="chk"><input type="checkbox" id="exList" checked> 重點表格 Key word tables（新生詞／忘記的舊生詞／發音加強／重點）</label>
+    <label class="chk"><input type="checkbox" id="exNotes" checked> 今日筆記 Today’s notes</label>
+    <label class="chk"><input type="checkbox" id="exPy" ${UI.py !== 'off' ? 'checked' : ''}> ${UI.py === 'zy' ? '注音' : '拼音 Pinyin'}</label>
+    ${canEx ? `<label class="chk"><input type="checkbox" id="exEx" checked> 新生詞例句 Example sentences about ${esc(st.name)}’s life (Claude)</label>` : ''}
+    <div class="field" style="margin-top:10px"><label for="exName">學生名字 Student (file name)</label><input id="exName" value="${esc(P.name || '')}"></div>
+    <p class="status">間距可以在 ⚙ 設定 調整。 Spacing is in ⚙ Settings.</p>
+  </div><div class="mf"><button data-close>Cancel</button><button class="primary" id="exGo">匯出 Export</button></div></div>`);
+  bg.querySelector('#exGo').onclick = () => { const o = { list: $('#exList').checked, notes: $('#exNotes').checked, py: $('#exPy').checked, ex: !!$('#exEx')?.checked, name: $('#exName').value.trim() }; closeModal(); doExport(o); };
+}
+async function wordExamples(st, words) {
+  words = [...new Set(words)]; if (!words.length || !SAMPLE) return {};
+  const key = 'ex_' + st.id; const have = { ...((DOCS.get(key) || {}).words || {}) };
+  const need = words.filter(w => !have[w]);
+  if (need.length) {
+    const bg = [['Level', st.level], ['From / lives', st.from], ['Work or study', st.work], ['Family', st.family], ['Hobbies', st.hobbies], ['Why learning Chinese', st.goals], ['Notes', st.notes]].filter(x => x[1]).map(x => `${x[0]}: ${x[1]}`).join('\n') || '(no background written yet: use everyday situations of an adult learner)';
+    const stop = busy(`Claude 正在幫 ${st.name} 寫例句… Writing example sentences`);
+    const ask = async ws => {
+      const { text } = await SAMPLE(`You write example sentences for a Mandarin teacher. Student: ${st.name}.\nTheir real life:\n${bg}\nFor EACH word below write ONE natural sentence in ${UI.zhs ? 'Simplified' : 'Traditional'} Chinese that contains the word and fits this student's real life (work, family, hobbies, plans), at most 22 characters, at the student's level, with full-width punctuation, plus a short English translation.\nWords: ${ws.join('; ')}\nReply with JSON only: {"items": [{"w": "word", "zh": "sentence", "en": "translation"}]} with one item per word, "w" copied exactly from the list.`, { modelTier: 'default', cache: false });
+      let r = null; const m = String(text || '').match(/[\[{][\s\S]*[\]}]/); try { r = JSON.parse(m ? m[0] : text); } catch (e) {}
+      const arr = Array.isArray(r) ? r : (r && (r.items || r.sentences)) || [];
+      for (const it of arr) { if (!it) continue; const zh = String(it.zh || it.sentence || '').trim(), en = String(it.en || it.translation || '').trim(); let w = String(it.w || it.word || '').trim(); if (!ws.includes(w)) w = ws.find(x => zh.includes(x)) || w; if (ws.includes(w) && zh) have[w] = { zh, en }; }
+    };
+    try { await ask(need); const left = need.filter(w => !have[w]); if (left.length) await ask(left); putDoc(key, { words: have, at: Date.now() }); }
+    catch (e) { toast('Claude 沒有寫好例句 Couldn’t write example sentences'); }
+    finally { stop(); }
+  }
+  return Object.fromEntries(words.filter(w => have[w]).map(w => [w, have[w]]));
+}
+async function doExport(o) {
+  const P = curPage(); if (!P) return; const st = stuOf(P.sid);
+  const ed = $('#tkDoc'); if (ed) { const ls = edLines(ed); P.said = clean(linesText(ls)); P.html = linesHtml(ls); }
+  const prevPy = UI.py; if (o.py && UI.py === 'off') UI.py = 'py'; PY_CACHE.clear();
+  let date; try { date = new Date().toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric', timeZone: (st && st.tz) || undefined }); } catch (e) { date = new Date().toLocaleDateString(); }
+  const dayISO = P.date || dayFor(st && st.tz);
+  const name = o.name || P.name || '';
+  let body = `<div class="hd"><div><div class="bk">${esc(UI.sig || '')}</div><h1>${esc(zhDisp('課後筆記'))} <span style="font-size:15px;color:#888;font-weight:400">Class notes</span></h1></div><div class="meta">${name ? esc(name) + '<br>' : ''}${esc(date)}</div></div>`;
+  const items = [];
+  for (const rs of docLines(P)) {
+    for (let k = 0; k < rs.length;) { const c = rs[k].h; if (!c) { k++; continue; } let t = '', m = '', nt = ''; while (k < rs.length && rs[k].h === c) { t += rs[k].t; m = m || rs[k].m || ''; nt = nt || rs[k].n || ''; k++; } t = t.trim(); if (t) items.push({ t, c, mean: c === 'g' && m ? m : phraseMeaning(t), note: nt ? esc(nt) : '' }); }
+  }
+  for (const x of talkSort([{ kind: 'doc', said: P.said }]).words) items.push({ t: x.w, c: 'g', mean: x.mean || phraseMeaning(x.w), note: '' });
+  const seen = new Set(); const uniq = items.filter(x => { const key = x.c + '|' + x.t; if (seen.has(key)) return false; seen.add(key); return true; });
+  const exFor = o.ex && st ? await wordExamples(st, uniq.filter(x => x.c === 'g').map(x => x.t)) : {};
+  if (o.list && uniq.length) {
+    const SECS = [['g', '新生詞', 'New words'], ['b', '忘記的舊生詞', 'Words to review'], ['p', '發音加強', 'Pronunciation practice'], ['y', '重點', 'Highlights & notes']];
+    body += `<h2>重點 Key words</h2>`;
+    for (const [c, zh, en] of SECS) {
+      const list = uniq.filter(x => x.c === c); if (!list.length) continue;
+      const hasNote = list.some(x => x.note), hasEx = c === 'g' && list.some(x => exFor[x.t]);
+      body += `<div class="qsh"><span class="qpill hl-${c}">${zh}</span><span class="en">${en} · ${list.length}</span></div><table><thead><tr><th>#</th><th>中文</th><th>Meaning</th>${hasEx ? '<th>例句 Example</th>' : ''}${hasNote ? '<th>Note</th>' : ''}</tr></thead><tbody>`;
+      list.forEach((x, i) => { const ex = hasEx ? exFor[x.t] : null;
+        body += `<tr><td class="n">${i + 1}</td><td class="z">${pdfZh(x.t, '', o.py, [])}</td><td>${esc(x.mean || '')}</td>${hasEx ? `<td class="exs">${ex ? `${pdfZh(exPunct(ex.zh), '', o.py, [])}<div class="exen">${esc(ex.en || '')}</div>` : ''}</td>` : ''}${hasNote ? `<td class="nt">${x.note}</td>` : ''}</tr>`; });
+      body += '</tbody></table>';
+    }
+  }
+  if (o.notes) {
+    const noteHtml = docLines(P).map(rs => tdLine(rs, { pdf: true, py: o.py })).filter(Boolean);
+    if (noteHtml.length) body += `<div class="qsh">今日筆記 <span class="en">Today’s notes</span></div><div class="box">${noteHtml.map(h => `<div class="para tdp">${h}</div>`).join('')}</div>`;
+  }
+  if (UI.sig) body += `<div class="wm">${esc(UI.sig)}</div>`;
+  body += `<div class="foot">${name ? esc(name) + ' · ' : ''}${esc(date)} · 螢光筆暴走 Highlighter Gone Wild</div>`;
+  UI.py = prevPy;
+  const css = `.pdf{width:700px;background:#fff;color:#222;font-family:"Noto Serif TC","Microsoft JhengHei",serif;padding:4px}
+    .pdf .hd{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:3px solid #3e7a96;padding-bottom:8px;margin-bottom:12px}
+    .pdf .bk{font-size:13px;color:#3e7a96;font-weight:700;letter-spacing:1px}.pdf h1{margin:2px 0 0;font-size:26px}
+    .pdf .meta{text-align:right;font-family:Inter,"Segoe UI",sans-serif;font-size:12px;color:#666}
+    .pdf h2{display:block;font-family:"Microsoft JhengHei","PingFang TC","Noto Sans TC",Inter,sans-serif;font-size:17px;font-weight:700;line-height:1;color:#3e7a96;margin:18px 0 8px;border-left:4px solid #3e7a96;padding:4px 0 4px 10px}
+    .pdf table{width:100%;border-collapse:collapse;font-family:Inter,"Segoe UI","Microsoft JhengHei",sans-serif;font-size:12.5px}
+    .pdf th{background:#f7f2dc;text-align:left;padding:6px 8px;font-size:11px;text-transform:uppercase;letter-spacing:.4px;color:#555}
+    .pdf td{padding:6px 8px;border-bottom:1px solid #ece6cf;vertical-align:middle}.pdf th:nth-child(1),.pdf td.n{text-align:center}.pdf th:nth-child(2),.pdf td.z{text-align:center;width:20%}.pdf td.exs{width:48%}.pdf td.exs .zt{font-size:15px}.pdf td.exs .r{font-size:7px;padding:0}.pdf td.exs .c .h{padding:0}.pdf td.z .zt{display:inline-block}.pdf td.nt{vertical-align:middle}
+    .pdf td.z{font-family:"Noto Serif TC","Microsoft JhengHei",serif;font-size:18px;white-space:nowrap}.pdf td.py{color:#4f88a3;white-space:nowrap}.pdf td.n{width:30px;color:#999}
+    .pdf .box{border:1px solid #ece6cf;border-radius:8px;padding:8px 14px}.pdf .para{padding:3px 0}.pdf .th{font-weight:700;color:#3e7a96;margin:8px 0 2px}
+    .pdf .zt{font-size:19px;line-height:1.9}.pdf .zt.wp{line-height:1.2}
+    .pdf .c{display:inline-flex;flex-direction:column;align-items:center;vertical-align:bottom;margin:0}
+    .pdf .r{font-family:Inter,"Segoe UI","Microsoft JhengHei",sans-serif;font-size:9px;color:#4f88a3;line-height:1.3;white-space:nowrap}
+    .pdf .gp{margin-bottom:10px}.pdf .gt{font-weight:700;color:#3e7a96;font-size:17px;margin:2px 0 6px}.pdf .gt .zt{font-size:18px}
+    .pdf .pat{display:inline-block;background:#f6f2e8;border-radius:6px;padding:5px 10px;margin:6px 0;font-family:Inter,"Segoe UI","Microsoft JhengHei",sans-serif;font-size:13px}.pdf .pat b{color:#3e7a96}
+    .pdf .ex{display:flex;flex-direction:column;align-items:flex-start;border-left:3px solid #c8e2f0;padding-left:10px;margin:5px 0}.pdf .ex .zt{font-size:17px}.pdf .en{font-family:Inter,"Segoe UI",sans-serif;font-size:12px;color:#777}
+    .pdf .gpp{font-family:Inter,"Segoe UI","Microsoft JhengHei",sans-serif;font-size:13px;line-height:1.6;margin:4px 0}.pdf .gpp .zt{font-size:15px}.pdf .gnote{background:#fff5cf;border-radius:6px;padding:4px 8px}
+    .pdf .drh{font-family:Inter,"Segoe UI",sans-serif;font-size:11px;font-weight:700;letter-spacing:.5px;color:#888;margin:10px 0 2px}.pdf .dr{margin:3px 0}.pdf .dr .zt{font-size:17px}
+    .pdf .ex,.pdf .dr,.pdf .pat,.pdf .gt{page-break-inside:avoid;break-inside:avoid}
+    .pdf .spk .av{width:26px;height:26px;margin-right:5px;vertical-align:middle;display:inline-block}.pdf .spk .av.ini{display:inline-grid;font-size:13px}
+    .pdf .c.zy{display:inline-flex;flex-direction:row;align-items:stretch;vertical-align:middle;height:1.5em;margin:0;padding:0}.pdf .c.zy .h{display:inline-flex;align-items:center;line-height:1;padding:0 0 0 1px;border-radius:0}.pdf .c.zy .zvp{display:inline-flex;flex-direction:row;align-items:center;justify-content:flex-start;margin:0!important;padding:0 2px 0 ${UI.gapZy ?? 1.5}pt}.pdf .zvp .zs{display:inline-flex;flex-direction:column;align-items:center;line-height:1.02}.pdf .zvp .zt2{font-style:normal;font-size:8px;line-height:1;margin-left:-1px;width:5px;overflow:visible}.pdf .zvp .zn{font-style:normal;line-height:.6}
+    .pdf .zv{display:inline-flex;flex-direction:column;align-items:center;position:relative;font-family:"Microsoft JhengHei",sans-serif;font-size:8.5px;line-height:1.02;color:#4f88a3;margin:0 2px 0 1px}
+    .pdf .zv.tm{margin-right:8px}.pdf .zv b{font-weight:400}.pdf .zv i{font-style:normal}.pdf .zv .zm{position:absolute;left:100%;top:50%;transform:translate(1px,-55%)}.pdf .zv .zn{line-height:.55}
+    .pdf .tkp{display:flex;gap:10px;align-items:flex-start;padding:5px 0;border-bottom:1px solid #f0ead8;page-break-inside:avoid;break-inside:avoid}.pdf .tkp:last-child{border-bottom:0}
+    .pdf .tkl{flex:none;width:86px;font-family:Inter,sans-serif;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:#888;padding-top:6px}
+    .pdf .tkp-mistake .tkl{color:#c0463e}.pdf .tkp-good .tkl{color:#2f8a55}.pdf .tkp-word .tkl{color:#3a7590}
+    .pdf .tkp .zt{font-size:17px}
+    .pdf .c-c{color:#b8336a}.pdf .c-s,.pdf .c-s .h{color:#9b2c8f}.pdf .c-v,.pdf .c-v .h{color:#3f8f2a}.pdf .c-n{color:#c46a12}.pdf .c-a{color:#1f7f86}.pdf .c-t{color:#8a6d1d}.pdf .c-o{color:#5b6b8a}.pdf .c-k{color:#1d5fa8;font-weight:700}
+    .pdf .c-bad,.pdf .c-bad .h,.pdf .h.c-bad{color:#c0392b;text-decoration:line-through;text-decoration-color:#c0392b}.pdf .exn.bad{color:#c0392b;font-weight:700;font-size:15px}.pdf .badn{display:block;font-family:Inter,sans-serif;font-size:10px;font-weight:700;color:#c0392b;margin-top:4px}.pdf .ex.exbad{border-left-color:#e7a29a}
+    .pdf .c-x,.pdf .h.c-x{color:#c45400;font-weight:700;text-decoration:underline;text-decoration-color:#e67e22}.pdf .xtag{font-family:"Noto Serif TC",serif;font-size:11px;font-weight:700;color:#c45400;border:1px solid #e67e22;border-radius:9px;padding:0 6px;margin-left:6px;white-space:nowrap}
+    .pdf .drml{display:inline-block;vertical-align:top}.pdf .dr-line{margin:1px 0}.pdf .dr-hint{font-family:Inter,sans-serif;font-size:11px;font-style:italic;color:#777;margin-top:3px}.pdf .dr-spk{margin-right:2px}
+    .pdf .gk{font-weight:700;color:#0f4c81;text-decoration:underline}.pdf .exn{color:#888;font-family:Inter,sans-serif;font-size:13px;margin-right:4px;padding-top:13px;flex:none}.pdf .ex>div{display:flex;align-items:flex-start;gap:2px}.pdf .exl{display:block}
+    .pdf .f-b,.pdf .f-b .h,.pdf .f-b .t{font-weight:700}.pdf .f-u .h,.pdf .f-u .t,.pdf span.f-u{text-decoration:underline}.pdf .f-s .h,.pdf .f-s .t,.pdf span.f-s{text-decoration:line-through}
+    .pdf .f-m,.pdf .f-m .h,.pdf .f-m .t{color:#1d5fa8;font-weight:700}.pdf .td-wrong,.pdf .td-wrong .h,.pdf .td-wrong .t{color:#c0463e}.pdf .td-right,.pdf .td-right .h,.pdf .td-right .t{color:#2f8a55}.pdf .td-arrow{margin:0 6px;color:#888}.pdf .tdw,.pdf .tdw .zt{color:#c0463e}.pdf .tkf{color:#2f8a55;margin-top:2px}
+    .pdf .dr{display:block;padding:4px 0}.pdf .sa{display:block}
+    .pdf .sa{font-family:Inter,"Segoe UI","Microsoft JhengHei",sans-serif;font-size:12px;margin:3px 0 0 18px;color:#333}.pdf .sa .zt{font-size:15px}
+    .pdf .sal{display:inline-block;min-width:66px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:#888}
+    .pdf .sfix,.pdf .sfix .zt{color:#2f8a55}.pdf .aok{color:#2f8a55;font-weight:700}.pdf .ano{color:#c0463e;font-weight:700}.pdf u.aok,.pdf u.ano{text-decoration:underline}
+    .pdf .sidebox{display:flex;gap:14px;align-items:flex-end;border:1px solid #e3e8c8;border-radius:8px;padding:6px 10px;margin:6px 0;page-break-inside:avoid;break-inside:avoid}.pdf .sideimg{flex:none;width:34%}.pdf .sideimg .dimgp{max-width:100%;margin:0}.pdf .sideimg img{max-height:170px}.pdf .sidetxt{flex:1;min-width:0;padding-bottom:4px}
+    .pdf .dimgp{display:inline-block;vertical-align:top;margin:4px 8px 4px 0;max-width:48%}.pdf .dimgp img{max-width:100%;max-height:200px;border-radius:6px}.pdf .dimgp .en{font-size:11px}
+    .pdf .gimgp{text-align:center;margin:8px 0}.pdf .gimgp img{max-width:100%;max-height:300px;border-radius:6px}
+    .pdf .wm{margin:40px 0 4px;text-align:center;font-family:Inter,"Segoe UI",sans-serif;font-size:46px;font-weight:700;letter-spacing:2px;color:#7BAFC8;opacity:.28;page-break-inside:avoid;break-inside:avoid}
+    .pdf .roline{font-family:Inter,sans-serif;color:#999;margin:2px 0 0 18px;font-size:14px}
+    .pdf .h{line-height:1.35}.pdf .zt.wp .h{line-height:1.05}.pdf .zt.wp .r{line-height:1;margin-bottom:${UI.gapPy ?? 1}pt}.pdf .zt.wp .c{margin-top:${UI.gapLine ?? 5}pt}.pdf .para.tdp{line-height:1.3}.pdf .td-ign,.pdf .td-ign .h,.pdf .td-ign .r{color:#bbb}.pdf .hl-note{font-family:Inter,"Segoe UI","Microsoft JhengHei",sans-serif;font-size:10px;color:#8a6d1d;background:#fff6d6;border-radius:6px;padding:0 5px;margin:0 3px}.pdf .hl-mean{font-family:Inter,"Segoe UI",sans-serif;font-size:10px;color:#3f7a3f;background:#e3f5e3;border-radius:6px;padding:0 5px;margin:0 3px;white-space:nowrap}.pdf .para.tdp{display:block;padding:4px 0;line-height:1.2}.pdf .tdp .f-hl{border-radius:3px}.pdf td.cat{font-size:11px;white-space:nowrap}.pdf td.cat span{border-radius:4px;padding:1px 5px}.pdf .spk{color:#3e7a96}.pdf .t{border-radius:3px}
+    .pdf .hl-y{background:#ffe58a}.pdf .hl-g{background:#bfeec0}.pdf .hl-p{background:#ffc6d3}.pdf .hl-b{background:#c3dfff}
+    .pdf .h{border-radius:0;padding:0 1px}.pdf .c{padding:0}.pdf .c .r{padding:0 2px}.pdf .c .h{align-self:stretch;text-align:center;padding:0 1px}.pdf .td-word{text-decoration:none!important;box-shadow:none!important}.pdf .td-word .h{text-decoration:underline;text-decoration-color:#2f8a55}.pdf .td-word,.pdf .td-word .h{color:#1f6b3f}/* 注音 mode: the same colour band as pinyin, one even shade on the character and its 注音 */.pdf .c.zy .hl-y{background:#ffe58a!important}.pdf .c.zy .hl-g{background:#bfeec0!important}.pdf .c.zy .hl-p{background:#ffc6d3!important}.pdf .c.zy .hl-b{background:#c3dfff!important}.pdf .c.zy .h,.pdf .c.zy .zv{border:0;border-radius:0}.pdf td .zt{font-size:18px}.pdf td.nt .zt{font-size:15px}.pdf td.nt .r{font-size:8px}
+    .pdf .nm{font-family:Inter,"Segoe UI",sans-serif;font-size:9px;font-weight:700;background:#d49a1f;color:#1b1b1b;border-radius:7px;padding:1px 4px;vertical-align:super;cursor:default}
+    .pdf .foot{margin-top:22px;font-family:Inter,"Segoe UI",sans-serif;font-size:10px;color:#aaa;text-align:center}
+    .pdf tr,.pdf .para{page-break-inside:avoid;break-inside:avoid}
+    .pdf .newpg{page-break-before:always;break-before:page}.pdf .lsec{font-family:"Microsoft JhengHei","PingFang TC","Noto Sans TC",sans-serif;font-size:20px;font-weight:700;color:#fff;background:#3e7a96;border-radius:8px;padding:8px 14px;line-height:1;margin:6px 0 4px}
+    .pdf .qsh{display:block;font-family:"Microsoft JhengHei","PingFang TC","Noto Sans TC",Inter,sans-serif;font-weight:700;color:#3e7a96;font-size:15px;line-height:1;margin:14px 0 6px}.pdf .qpill{display:inline-block;line-height:1;padding:5px 12px;border-radius:13px;color:#24343c;margin-right:8px;vertical-align:middle}.pdf .qsh .en{vertical-align:middle;line-height:1}.pdf td.exs .zt{font-size:16px}.pdf .exen{font-family:Inter,"Segoe UI",sans-serif;font-size:11px;color:#777;margin-top:2px}.pdf .qsh .en{font-family:Inter,"Segoe UI",sans-serif;font-size:12px;color:#888;font-weight:600}
+    .pdf .qq{padding:7px 0;border-bottom:1px dashed #ece6cf;page-break-inside:avoid;break-inside:avoid}.pdf .qq:last-child{border-bottom:0}.pdf .qq .zt{font-size:17px}
+    .pdf .qopts{margin:4px 0 0 18px}.pdf .qopt{display:inline-block;border:1px solid #ddd;border-radius:6px;padding:1px 8px;margin:0 6px 4px 0}.pdf .qopt .zt{font-size:15px}.pdf .qopt.ok{border-color:#2f8a55;color:#2f8a55}`;
+  const stage = $('#pdfStage');
+  stage.innerHTML = `<style>${css}</style><div class="pdf${(o.py && prevPy === 'zy') ? ' zy' : ''}" id="pdfDoc">${body}</div>`;
+  const stop = busy('正在做 PDF… Creating PDF');
+  try {
+    if (!window.html2pdf) await loadScript(PDF_LIB);
+    try { await document.fonts.load('20px "Noto Serif TC"', $('#pdfDoc').textContent.slice(0, 4000)); await document.fonts.ready; } catch (e) {}
+    const fname = `${dayISO} ${name || 'notes'}.pdf`.replace(/[\\/:*?"<>|]/g, ' ').replace(/\s+/g, ' ').trim();
+    const blob = await window.html2pdf().set({ margin: [12, 12, 14, 12], image: { type: 'jpeg', quality: 0.95 }, html2canvas: { scale: 2, backgroundColor: '#ffffff', scrollX: 0, scrollY: 0 }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }, pagebreak: { mode: ['css', 'legacy'], avoid: ['tr', '.para', '.qq'] } }).from($('#pdfDoc')).outputPdf('blob');
+    stop(); await saveFile(fname, blob); stage.innerHTML = ''; toast('PDF 存好了 PDF saved');
+  } catch (e) {
+    stop(); stage.innerHTML = '';
+    if (e && e.code === 'declined') return toast('PDF 沒有存 PDF not saved');
+    toast('PDF 做不出來 Could not create the PDF: ' + (e?.message || e?.code || 'unknown error'));
+  } finally { PY_CACHE.clear(); }
+}
+
+/* ---------------- whiteboard events ---------------- */
+let WBN_T = null;
+document.addEventListener('input', e => { if (e.target && e.target.id === 'wbNote' && POP && POP.wb) { const wb = POP.wb, v = e.target.textContent.trim(); clearTimeout(WBN_T); WBN_T = setTimeout(() => wbSetNote(wb, v), 500); } });
+document.addEventListener('keydown', e => { if (e.target && e.target.id === 'tkDoc' && POP && POP.wb) closePop(); }, true);
+
+document.addEventListener('compositionstart', e => { if (e.target.id === 'tkDoc') WB_COMPOSING = true; });
+document.addEventListener('compositionend', e => { if (e.target.id === 'tkDoc') { WB_COMPOSING = false; wbSchedule(e.target); } });
+document.addEventListener('blur', e => { if (e.target && e.target.id === 'tkDoc') wbRedraw(e.target); }, true);
+document.addEventListener('input', e => { if (e.target.id === 'tkDoc') tdChanged(); });
+document.addEventListener('paste', e => { if (e.target.closest && e.target.closest('.rt')) { e.preventDefault(); const t = e.clipboardData?.getData('text/plain') || ''; document.execCommand('insertText', false, t); } });
+{ const m = $('#hlMenu'); if (m) m.innerHTML = HL_CATS.map(([c, zh, en]) => `<button class="swl" data-tdhl="${c}" title="${en}"><i class="sw ${c}"></i>${zh}</button>`).join('') + '<button class="swl" data-tdhl="" title="Remove the highlight"><i class="sw" style="background:transparent;border:1px dashed var(--muted)"></i>清除螢光筆</button>'; }
+document.addEventListener('mousedown', e => { if (e.target.closest && e.target.closest('[data-hlm],[data-tdhl],[data-tdcmd]')) e.preventDefault(); });
+document.addEventListener('mousedown', e => { if (POP && !e.target.closest('.pop,#fmtBar')) closePop(); });
+document.addEventListener('click', e => {
+  const t = e.target.closest && e.target; if (!t) return;
+  if (t.closest('[data-hlm]')) { const m = $('#hlMenu'); m.hidden = !m.hidden; return; }
+  const b = t.closest('[data-tdhl]');
+  if (!b) { if (!t.closest('#hlMenu')) $('#hlMenu') && ($('#hlMenu').hidden = true); return; }
+  $('#hlMenu').hidden = true;
+  const a = getSelection().anchorNode; const box = a && (a.nodeType === 1 ? a : a.parentElement)?.closest('.rt');
+  if (!box || getSelection().isCollapsed) return toast('先在白板上選取字詞，再選螢光筆 Select words first, then pick a colour');
+  document.execCommand('styleWithCSS', false, true);
+  document.execCommand('hiliteColor', false, b.dataset.tdhl ? HL_HEX[b.dataset.tdhl] : 'transparent');
+  document.execCommand('styleWithCSS', false, false);
+  box.dispatchEvent(new Event('input', { bubbles: true }));
+  if (b.dataset.tdhl === 'g') setTimeout(() => fillBoxMeanings(box), 700);
+});
+let LAST_RT = null;
+document.addEventListener('focusin', e => { const r = e.target.closest && e.target.closest('.rt'); if (r) LAST_RT = r; });
+document.addEventListener('click', e => {
+  const b = e.target.closest && e.target.closest('[data-tdcmd]'); if (!b) return;
+  const a = getSelection().anchorNode; const inSel = a && (a.nodeType === 1 ? a : a.parentElement)?.closest('.rt');
+  const box = inSel || (LAST_RT && LAST_RT.isConnected ? LAST_RT : null);
+  if (!box) return toast('先點一下白板 Click in the whiteboard first');
+  if (!inSel) box.focus();
+  document.execCommand('styleWithCSS', false, false); document.execCommand(b.dataset.tdcmd, false, null);
+  box.dispatchEvent(new Event('input', { bubbles: true }));
+});
+let skipClick = false;
+document.addEventListener('mouseup', e => {
+  if (!(e.target.closest && e.target.closest('#tkDoc'))) return;
+  const sel = getSelection(); if (!sel || sel.isCollapsed || !sel.rangeCount) return;
+  const ed = $('#tkDoc'), r = sel.getRangeAt(0); if (!ed.contains(r.startContainer) || !ed.contains(r.endContainer)) return;
+  const box = document.createElement('div'); box.appendChild(r.cloneContents()); $$(WB_SKIP, box).forEach(x => x.remove());
+  const word = box.textContent.trim(); if (!word || !HAN.test(word) || word.length > 40) return;
+  skipClick = true; setTimeout(() => skipClick = false, 50);
+  openPop(r.getBoundingClientRect(), { k: '', word, wb: { a: wbPos(ed, r.startContainer, r.startOffset), b: wbPos(ed, r.endContainer, r.endOffset) }, wbCur: '' });
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { closePop(); closeModal(); } });
+document.addEventListener('click', async e => {
+  const t = e.target; if (!t.closest) return;
+  const pa = t.closest('[data-pop]');
+  if (pa && POP) {
+    const act = pa.dataset.pop;
+    if (act === 'say') speak(POP.word);
+    if (act === 'wbhl') { const info = POP; wbHighlight(info.wb, pa.dataset.c); closePop(); if (pa.dataset.c === 'y') { const r = pa.getBoundingClientRect(); openPop({ left: r.left, right: r.right, top: r.top - 60, bottom: r.top - 40, width: r.width, height: 20 }, { ...info, wbCur: 'y', wbNote: wbNoteOf(info.wb) }); setTimeout(() => $('#wbNote')?.focus(), 0); } }
+    return;
+  }
+  if (t.closest('.pop')) return;
+  const w = t.closest('.zh .w');
+  if (w && !skipClick && t.closest('#tkDoc')) {
+    const ed = $('#tkDoc'); const r = document.createRange(); r.selectNodeContents(w);
+    openPop(w.getBoundingClientRect(), { k: '', word: w.dataset.w, py: w.dataset.py, wb: { a: wbPos(ed, r.startContainer, r.startOffset), b: wbPos(ed, r.endContainer, r.endOffset) }, wbCur: w.closest('.f-hl')?.className.match(/hl-([ygpb])/)?.[1] || '' });
+    return;
+  }
+  { const d = t.closest('[data-delpage]'); if (d) { const id = d.dataset.delpage; if (await askConfirm('刪除這一頁？ Delete page?', '刪除後就找不回來了。 This can’t be undone.', 'Delete', true)) { putDoc(id, null); if (UI.page === id) UI.page = null; saveUI(); render(); } return; } }
+  { const p = t.closest('[data-page]'); if (p) { openPage(p.dataset.page); if (innerWidth < 760) { UI.side = false; renderSide(); } return; } }
+  const act = t.closest('[data-act]')?.dataset.act;
+  if (act === 'newpage') { const P = curPage(); const st = stuMode() !== 'none' && P ? stuOf(P.sid) : null; return newPage(st); }
+  if (act === 'stustart') return startWith($('#stuIn')?.value);
+  if (act === 'settings') return settingsDialog();
+  if (act === 'stus') return studentsDialog(curPage()?.sid);
+  if (act === 'help') return helpDialog();
+  if (act === 'backup') return backup();
+  if (act === 'restore') return $('#fileIn').click();
+});
+document.addEventListener('keydown', e => { if (e.target && e.target.id === 'stuIn' && e.key === 'Enter') startWith(e.target.value); });
+document.addEventListener('change', e => { if (e.target.id === 'stuFilter') { UI.filter = e.target.value; saveUI(); renderSide(); } });
+$('#fileIn').onchange = e => { const f = e.target.files[0]; e.target.value = ''; if (f) restore(f); };
+$('#zhsMode').onclick = async e => { const v = e.target.closest('[data-v]')?.dataset.v; if (!v) return; UI.zhs = v === 's'; saveUI(); if (UI.zhs) await loadZhs(); PY_CACHE.clear(); render(); };
+$('#pyMode').onclick = e => { const v = e.target.closest('[data-v]')?.dataset.v; if (!v) return; UI.py = v; saveUI(); PY_CACHE.clear(); render(); };
+$('#fsUp').onclick = () => { UI.fs = Math.min(44, (UI.fs || 24) + 2); saveUI(); render(); };
+$('#fsDown').onclick = () => { UI.fs = Math.max(16, (UI.fs || 24) - 2); saveUI(); render(); };
+$('#btnSide').onclick = () => { UI.side = UI.side === false; saveUI(); renderSide(); };
+$('#btnExport').onclick = exportDialog;
+
+/* ---------------- start ---------------- */
+if (UI.zhs) loadZhs().then(ok => { if (ok) { PY_CACHE.clear(); render(); } });
+render();
+loadDict();
+connect();
+if (!window.pinyinPro) $('#dictStatus').textContent = 'Pinyin library unavailable — using dictionary pinyin';
+
+</script>
+</body></html>
