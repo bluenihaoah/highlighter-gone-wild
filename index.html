@@ -554,7 +554,7 @@ body.py-zy .td-wb{line-height:2}
 .pop .pzc{display:inline-grid;grid-template-columns:auto auto;align-items:center;font-family:var(--zh);font-size:32px;font-weight:700;line-height:1.05}
 .pop .pzp{grid-column:1;grid-row:1;justify-self:center;font-family:var(--ui);font-size:13px;font-weight:500;color:var(--py);line-height:1.2;white-space:nowrap}
 .pop .pzh{grid-column:1;grid-row:2}
-.pop .pzc .zv{grid-column:2;grid-row:2;font-size:12px;font-weight:400;margin:0 2px 0 1px}
+.pop .pzz{grid-column:2;grid-row:2;display:inline-flex;align-items:center;margin:0 4px 0 1px;color:var(--py);font-family:"Microsoft JhengHei","PingFang TC",sans-serif;font-weight:400}.pop .pzs{display:inline-flex;flex-direction:column;align-items:center;font-size:11px;line-height:1.05}.pop .pzs b{font-weight:400}.pop .pzs i{font-style:normal;line-height:.6}.pop .pzt{font-style:normal;font-size:11px;line-height:1;margin-left:0}
 .pop .pzx{font-family:var(--zh);font-size:32px;font-weight:700}
 .pop .chars .pe-btn{font-size:12px;padding:1px 7px;margin-left:6px;vertical-align:middle}
 .gs-wrap{overflow-x:auto}.gs{width:100%;border-collapse:collapse;font-size:14px}.gs th{text-align:left;font-size:12px;color:var(--muted);font-weight:600;padding:6px;border-bottom:1px solid var(--line)}
@@ -583,7 +583,7 @@ body.py-zy .td-wb{line-height:2}
 .pop .pzc{display:inline-grid;grid-template-columns:auto auto;align-items:center;font-family:var(--zh);font-size:32px;font-weight:700;line-height:1.05}
 .pop .pzp{grid-column:1;grid-row:1;justify-self:center;font-family:var(--ui);font-size:13px;font-weight:500;color:var(--py);line-height:1.2;white-space:nowrap}
 .pop .pzh{grid-column:1;grid-row:2}
-.pop .pzc .zv{grid-column:2;grid-row:2;font-size:12px;font-weight:400;margin:0 2px 0 1px}
+.pop .pzz{grid-column:2;grid-row:2;display:inline-flex;align-items:center;margin:0 4px 0 1px;color:var(--py);font-family:"Microsoft JhengHei","PingFang TC",sans-serif;font-weight:400}.pop .pzs{display:inline-flex;flex-direction:column;align-items:center;font-size:11px;line-height:1.05}.pop .pzs b{font-weight:400}.pop .pzs i{font-style:normal;line-height:.6}.pop .pzt{font-style:normal;font-size:11px;line-height:1;margin-left:0}
 .pop .pzx{font-family:var(--zh);font-size:32px;font-weight:700}
 .pop .chars .pe-btn{font-size:12px;padding:1px 7px;margin-left:6px;vertical-align:middle}
 .gs-wrap{overflow-x:auto}.gs{width:100%;border-collapse:collapse;font-size:14px}.gs th{text-align:left;font-size:12px;color:var(--muted);font-weight:600;padding:6px;border-bottom:1px solid var(--line)}
@@ -906,7 +906,13 @@ function popHead(word, py) {
   const han = chars.filter(isHan);
   if (!han.length || han.length !== syl.length) return `<span class="pz">${esc(zhDisp(word))}</span><span class="pp">${esc(py)}</span>`;
   let k = 0;
-  return `<span class="pzw">${chars.map(c => { if (!isHan(c)) return `<span class="pzx">${esc(c)}</span>`; const s = syl[k++]; return `<span class="pzc"><span class="pzp">${esc(s)}</span><span class="pzh">${esc(zhDisp(c))}</span>${zyCol(s)}</span>`; }).join('')}</span>`;
+  return `<span class="pzw">${chars.map(c => { if (!isHan(c)) return `<span class="pzx">${esc(c)}</span>`; const s = syl[k++]; return `<span class="pzc"><span class="pzp">${esc(s)}</span><span class="pzh">${esc(zhDisp(c))}</span>${popZy(s)}</span>`; }).join('')}</span>`;
+}
+// 注音 beside the character: symbols in a column, the tone mark right next to them (in the same row, so it stays close)
+function popZy(py) {
+  if (!py) return '';
+  const { tone, plain } = sylInfo(py); const syms = [...toZhuyin(plain, 1)];
+  return `<span class="pzz" aria-hidden="true"><span class="pzs">${tone === 5 ? '<i>˙</i>' : ''}${syms.map(x => `<b>${x}</b>`).join('')}</span>${tone >= 2 && tone <= 4 ? `<i class="pzt">${ZY_TONE[tone]}</i>` : ''}</span>`;
 }
 function partsHtml(word) {
   const P = PARTS[word]; const edit = canEditDict() && [...word].length > 1;
@@ -1282,7 +1288,7 @@ function wbApply(ed, lines) {       // redraw the whiteboard from lines, keeping
    Data: each teacher's own pages and students. On claude.ai they are kept in the teacher's private
    space of this artifact's database (data/users/<id>); anywhere else they stay in this browser.
    ========================================================= */
-const HGW_VER = 'v3';
+const HGW_VER = 'v4';
 let CAN_WRITE = false, STUDENT = false, READY = false;
 const NOTE_NUM = new Map();
 let SAMPLE = null, DB = null, DL = null, USER_ID = null, MODE = 'local';
