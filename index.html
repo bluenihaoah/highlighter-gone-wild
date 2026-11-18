@@ -549,6 +549,17 @@ body.py-zy .td-wb{line-height:2}
   .fc .big{font-size:48px}
   .crumb{display:none}
 }
+.pop .ph{align-items:flex-end}
+.pop .pzw{display:inline-flex;align-items:flex-end;gap:2px;flex-wrap:wrap}
+.pop .pzc{display:inline-grid;grid-template-columns:auto auto;align-items:center;font-family:var(--zh);font-size:32px;font-weight:700;line-height:1.05}
+.pop .pzp{grid-column:1;grid-row:1;justify-self:center;font-family:var(--ui);font-size:13px;font-weight:500;color:var(--py);line-height:1.2;white-space:nowrap}
+.pop .pzh{grid-column:1;grid-row:2}
+.pop .pzc .zv{grid-column:2;grid-row:2;font-size:12px;font-weight:400;margin:0 2px 0 1px}
+.pop .pzx{font-family:var(--zh);font-size:32px;font-weight:700}
+.pop .chars .pe-btn{font-size:12px;padding:1px 7px;margin-left:6px;vertical-align:middle}
+.gs-wrap{overflow-x:auto}.gs{width:100%;border-collapse:collapse;font-size:14px}.gs th{text-align:left;font-size:12px;color:var(--muted);font-weight:600;padding:6px;border-bottom:1px solid var(--line)}
+.gs td{padding:8px 6px;border-bottom:1px solid var(--line);vertical-align:top}.gs-w{font-family:var(--zh);font-size:20px;white-space:nowrap}.gs-p{color:var(--py);white-space:nowrap}.gs-m{width:100%;min-width:140px}.gs-c{font-family:var(--zh);font-size:13px;max-width:260px}.gs-a{white-space:nowrap}.gs-a button{padding:3px 10px;margin-left:4px}
+.side-foot .badge{display:inline-block;min-width:18px;padding:0 6px;border-radius:9px;background:#d49a1f;color:#1b1b1b;font-size:11px;font-weight:700;text-align:center;margin-left:4px}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 
 /* 螢光筆暴走 additions */
@@ -566,6 +577,18 @@ body.py-zy .td-wb{line-height:2}
 .set-row{border:1px solid var(--line);border-radius:10px;padding:8px 10px;margin:0 0 8px;display:flex;flex-direction:column;gap:6px}.set-line{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
 .set-col{width:22px;height:22px;border-radius:50%;padding:0;border:2px solid #fff;box-shadow:0 0 0 1px var(--line);cursor:pointer}.set-col.on{box-shadow:0 0 0 2px var(--ink)}
 .set-chk{display:inline-flex;align-items:center;gap:4px;margin:0 8px 0 0;font-size:13px}.set-ch{width:44px;text-align:center;font-size:18px}.set-demo{font-family:var(--zh);font-size:16px;margin-left:6px}.set-btns{display:flex;gap:8px;flex-wrap:wrap}
+
+.pop .ph{align-items:flex-end}
+.pop .pzw{display:inline-flex;align-items:flex-end;gap:2px;flex-wrap:wrap}
+.pop .pzc{display:inline-grid;grid-template-columns:auto auto;align-items:center;font-family:var(--zh);font-size:32px;font-weight:700;line-height:1.05}
+.pop .pzp{grid-column:1;grid-row:1;justify-self:center;font-family:var(--ui);font-size:13px;font-weight:500;color:var(--py);line-height:1.2;white-space:nowrap}
+.pop .pzh{grid-column:1;grid-row:2}
+.pop .pzc .zv{grid-column:2;grid-row:2;font-size:12px;font-weight:400;margin:0 2px 0 1px}
+.pop .pzx{font-family:var(--zh);font-size:32px;font-weight:700}
+.pop .chars .pe-btn{font-size:12px;padding:1px 7px;margin-left:6px;vertical-align:middle}
+.gs-wrap{overflow-x:auto}.gs{width:100%;border-collapse:collapse;font-size:14px}.gs th{text-align:left;font-size:12px;color:var(--muted);font-weight:600;padding:6px;border-bottom:1px solid var(--line)}
+.gs td{padding:8px 6px;border-bottom:1px solid var(--line);vertical-align:top}.gs-w{font-family:var(--zh);font-size:20px;white-space:nowrap}.gs-p{color:var(--py);white-space:nowrap}.gs-m{width:100%;min-width:140px}.gs-c{font-family:var(--zh);font-size:13px;max-width:260px}.gs-a{white-space:nowrap}.gs-a button{padding:3px 10px;margin-left:4px}
+.side-foot .badge{display:inline-block;min-width:18px;padding:0 6px;border-radius:9px;background:#d49a1f;color:#1b1b1b;font-size:11px;font-weight:700;text-align:center;margin-left:4px}
 </style></head><body>
 <header>
   <button class="ghost" id="btnSide" title="Show or hide the page list" aria-label="Pages">☰</button>
@@ -798,13 +821,16 @@ function lookup(w) {
   const v = LEX.vocabMap.get(w); if (v && v.e) res.push({ src: 'Lesson vocabulary', defs: [v.e], pos: v.pos });
   if (LEX.gloss.has(w)) res.push({ src: 'Lesson note', defs: [LEX.gloss.get(w)] });
   const d = DICT.get(w); if (d) d.slice(0, 4).forEach(e => res.push({ src: 'Dictionary', defs: e.d.slice(0, 5), p: markPinyin(e.p) }));
+  if (!d) for (const x of otherVocab(w)) { if (res.some(r => r.defs.includes(x.e))) continue; res.push({ src: x.src, defs: [x.e], pos: x.pos }); if (res.length >= 6) break; }
   return res;
 }
 function shortMeaning(w) {
   if (GLOSS[w]) return GLOSS[w];
   const v = LEX.vocabMap.get(w); if (v && v.e) return v.e;
   if (LEX.gloss.has(w)) return LEX.gloss.get(w);
-  const d = DICT.get(w); return d ? d[0].d.slice(0, 3).join('; ') : '';
+  const d = DICT.get(w); if (d) return d[0].d.slice(0, 3).join('; ');
+  const ov = otherVocab(w)[0]; if (ov) return ov.e;
+  const g = canEditDict() ? guessOf(w) : null; return g ? g.mean : '';
 }
 const HW2FW = { ',': '，', '.': '。', '!': '！', '?': '？', ':': '：', ';': '；', '(': '（', ')': '）' };
 const ZH_CTX = /[\p{Script=Han}，。！？：；、（）「」『』…]/u;
@@ -867,35 +893,119 @@ const rtFrom = (text, html) => linesHtml(docLines({ said: text || '', html: html
 const richPlain = (text, html) => docLines({ said: text || '', html: html || '' }).map(rs => rs.map(r => { let x = esc(r.t); if (r.s) x = `<s>${x}</s>`; if (r.u) x = `<u>${x}</u>`; if (r.b) x = `<b>${x}</b>`; if (r.h) x = `<mark class="f-hl hl-${r.h}"${hlAuto(r.h) && r.m ? ` data-m="${esc(r.m)}"` : ''}${hlNote(r.h) && r.n ? ` data-n="${esc(r.n)}"` : ''}>${x}</mark>`; return x; }).join('')).join('<br>');
 let POP = null;
 function closePop() { $('.pop')?.remove(); POP = null; }
+
+/* ---------------- dictionary extras (shared by 跟小嵐學中文 and 螢光筆暴走) ----------------
+   PARTS: how the teacher splits a word, {詞: [{t, m}]}  ·  GUESS: Claude's guesses for words the dictionary doesn't have,
+   {詞: {mean, py, ctx, src, at, status: pending | ok | no}} — the teacher confirms them in 字典待確認. */
+const pyKey = p => String(p || '').toLowerCase().replace(/[\s'’\-]/g, '');
+const guessOf = w => { const g = GUESS[w]; return g && g.status === 'pending' && g.mean ? g : null; };
+const pendingGuesses = () => Object.entries(GUESS).filter(([, g]) => g && g.status === 'pending' && g.mean).sort((a, b) => (b[1].at || 0) - (a[1].at || 0));
+// the word in the pop-up: pinyin above each character, 注音 to its right
+function popHead(word, py) {
+  const chars = [...word]; const syl = splitPinyin(py);
+  const han = chars.filter(isHan);
+  if (!han.length || han.length !== syl.length) return `<span class="pz">${esc(zhDisp(word))}</span><span class="pp">${esc(py)}</span>`;
+  let k = 0;
+  return `<span class="pzw">${chars.map(c => { if (!isHan(c)) return `<span class="pzx">${esc(c)}</span>`; const s = syl[k++]; return `<span class="pzc"><span class="pzp">${esc(s)}</span><span class="pzh">${esc(zhDisp(c))}</span>${zyCol(s)}</span>`; }).join('')}</span>`;
+}
+function partsHtml(word) {
+  const P = PARTS[word]; const edit = canEditDict() && [...word].length > 1;
+  let inner = '';
+  if (Array.isArray(P) && P.length) inner = P.map(x => `<b>${esc(zhDisp(x.t))}</b> ${esc(x.m || '')}`).join(' · ');
+  else if ([...word].length > 1 && [...word].length <= 6 && [...word].every(isHan)) inner = [...word].map(c => `<b>${esc(zhDisp(c))}</b> ${esc((shortMeaning(c) || '').split(/[;；]/)[0])}`).join(' · ');
+  if (!inner && !edit) return '';
+  return `<div class="chars">${inner}${edit ? `<button class="ghost pe-btn" data-pop="parts" title="Edit how this word is split">✎ ${Array.isArray(P) ? '已編輯' : '編輯'}</button>` : ''}</div>`;
+}
+const GUESS_RUN = new Set();
+async function claudeGuess(word, ctx, src) {
+  word = String(word || '').trim(); if (!word || !SAMPLE || !canEditDict() || GLOSS[word]) return null;
+  const g0 = GUESS[word]; if (g0) return g0.status === 'pending' ? g0 : null;
+  if (GUESS_RUN.has(word)) return null; GUESS_RUN.add(word);
+  try {
+    const r = await SAMPLE.json(`A Mandarin teacher (Traditional Chinese, Taiwan) looked up 「${word}」, but it is not in the dictionary.${ctx && ctx !== word ? `\nSentence: ${ctx}` : ''}\nGive its Hanyu pinyin with tone marks and a short English meaning as used here (a name: say whose or what).\nReply as JSON {"py": "...", "mean": "<2–8 English words>"}.`, { modelTier: 'quick' });
+    if (r && r.mean) { const it = { mean: String(r.mean).trim().slice(0, 80), py: String(r.py || '').trim().slice(0, 60), ctx: String(ctx || '').slice(0, 140), src: String(src || '').slice(0, 60), at: Date.now(), status: 'pending' }; GUESS[word] = it; saveGuess(); return it; }
+  } catch (e) {} finally { GUESS_RUN.delete(word); }
+  return null;
+}
+function partsDialog(word) {
+  const P = PARTS[word];
+  const now = Array.isArray(P) && P.length ? P : (() => { const segs = segment(word).filter(x => x.han).map(x => word.slice(x.s, x.e)); const ps = segs.length > 1 ? segs : [...word]; return ps.map(t => ({ t, m: (shortMeaning(t) || '').split(/[;；]/)[0].trim() })); })();
+  const bg = modal(`<div class="modal sm"><div class="mh">拆解「${esc(word)}」 Split the word</div><div class="mb">
+    <p class="status" style="margin-top:0">一行一塊：<b>字 : 意思</b>。合起來要等於「${esc(word)}」。 One part per line: <b>characters : meaning</b>.</p>
+    <textarea id="ptIn" rows="5" spellcheck="false" style="width:100%;font-size:16px;font-family:var(--zh)">${esc(now.map(x => `${x.t} : ${x.m || ''}`).join('\n'))}</textarea>
+    <p class="status">例：<span style="font-family:var(--zh)">日常 : daily</span>／<span style="font-family:var(--zh)">生活 : to live</span>。所有課本、白板和學生看到的都會是你的版本。</p>
+  </div><div class="mf">${Array.isArray(P) ? '<button id="ptAuto" style="margin-right:auto">↺ 恢復自動 Automatic</button>' : ''}<button data-close>Cancel</button><button class="primary" id="ptOk">儲存 Save</button></div></div>`);
+  const ta = bg.querySelector('#ptIn'); ta.focus();
+  bg.querySelector('#ptAuto')?.addEventListener('click', () => { delete PARTS[word]; saveParts(); closeModal(); toast('恢復自動拆解 Back to automatic'); });
+  bg.querySelector('#ptOk').onclick = () => {
+    const parts = ta.value.split('\n').map(l => l.trim()).filter(Boolean).map(l => { const m = l.match(/^(.+?)\s*[:：]\s*(.*)$/); return m ? { t: m[1].replace(/\s+/g, ''), m: m[2].trim() } : { t: l.replace(/\s+/g, ''), m: '' }; }).filter(x => x.t);
+    if (!parts.length) return toast('至少要一塊 Add at least one part');
+    if (parts.map(x => x.t).join('') !== word.replace(/\s+/g, '')) return toast(`合起來要等於「${word}」，現在是「${parts.map(x => x.t).join('')}」`);
+    PARTS[word] = parts.map(x => ({ t: x.t, m: x.m.slice(0, 60) })); saveParts(); closeModal(); toast('拆解存好了 Saved');
+  };
+}
+// 字典待確認: Claude's guesses in one table for the teacher to confirm, change or drop
+function guessDialog() {
+  const rows = pendingGuesses();
+  const bg = modal(`<div class="modal"><div class="mh">📖 字典待確認 Claude’s guesses to check <span class="status">${rows.length}</span></div><div class="mb">
+    ${rows.length ? `<p class="status" style="margin-top:0">字典查不到的詞，Claude 依照句子推測的意思。確認後會變成「你的意思」，以後到處都用這個。 Confirmed meanings become your own meaning everywhere.</p>
+    <div class="gs-wrap"><table class="gs"><thead><tr><th>詞</th><th>拼音</th><th>Claude 推測</th><th>句子 · 出處</th><th></th></tr></thead><tbody>${rows.map(([w, g]) => `<tr data-gw="${esc(w)}"><td class="gs-w">${esc(zhDisp(w))}</td><td class="gs-p">${esc(g.py || wordPy(w))}</td><td><input class="gs-m" value="${esc(g.mean)}" aria-label="Meaning of ${esc(w)}"></td><td class="gs-c">${esc(g.ctx || '')}${g.src ? `<div class="status">${esc(g.src)}</div>` : ''}<div class="status">${esc(new Date(g.at || 0).toLocaleDateString())}</div></td><td class="gs-a"><button class="primary" data-gok title="Confirm">✓</button><button class="ghost" data-gno title="Not right — remove">✕</button></td></tr>`).join('')}</tbody></table></div>` : '<p class="status">目前沒有要確認的詞。 Nothing to check right now.</p>'}
+  </div><div class="mf">${rows.length > 1 ? '<button id="gsAll" style="margin-right:auto">✓ 全部確認 Confirm all</button>' : ''}<button class="primary" data-close>完成 Done</button></div></div>`);
+  const done = (w, ok, mean) => { const g = GUESS[w]; if (!g) return; if (ok && mean) { GLOSS[w] = mean; g.mean = mean; g.status = 'ok'; } else g.status = 'no'; g.done = Date.now(); };
+  const finish = () => { saveGuess(); saveGloss(); rebuildLexicon(); renderSide(); };
+  bg.addEventListener('click', e => {
+    const tr = e.target.closest('tr[data-gw]');
+    if (tr && e.target.closest('[data-gok]')) { done(tr.dataset.gw, true, tr.querySelector('.gs-m').value.trim()); finish(); tr.remove(); toast('確認了 Confirmed'); }
+    else if (tr && e.target.closest('[data-gno]')) { done(tr.dataset.gw, false); finish(); tr.remove(); toast('拿掉了 Removed'); }
+    else if (e.target.closest('#gsAll')) { $$('tr[data-gw]', bg).forEach(r => { done(r.dataset.gw, true, r.querySelector('.gs-m').value.trim()); r.remove(); }); finish(); toast('全部確認了 All confirmed'); }
+  });
+}
+const guessBtnHtml = () => { if (!canEditDict()) return ''; const n = pendingGuesses().length; return n ? `<button class="ghost" data-act="guesses">📖 字典待確認 <span class="badge">${n}</span></button>` : ''; };
+// the pop-up: Claude's guess fills in when the dictionary and your lessons have nothing for the word
+function popGuessFill(info, ctx, src) {
+  const box = $('#popGuess'); if (!box) return;
+  claudeGuess(info.word, ctx, src).then(g => {
+    if (!POP || POP.word !== info.word) return; const b = $('#popGuess'); if (!b) return;
+    b.outerHTML = g ? `<div class="src">Claude 推測 · 待你確認</div><div>${g.py && pyKey(g.py) !== pyKey(info.py || wordPy(info.word)) ? `<span class="pyl">${esc(g.py)}</span>` : ''}${esc(g.mean)}</div>` : `<div class="status">${T('no_dict')}</div>`;
+    renderSide();
+  });
+}
+
 function openPop(rect, info) {
   closePop(); POP = info;
   const { word, k } = info;
   const ann = info.annId ? annList().find(a => a.id === info.annId) : null;
   const py = info.py || wordPy(word);
   let defsH = '', last = '';
-  for (const d of lookup(word)) { if (d.src !== last) { defsH += `<div class="src">${d.src}</div>`; last = d.src; } defsH += `<div>${d.p ? `<span class="pyl">${esc(d.p)}</span>` : ''}${d.pos ? `<span class="tag">${esc(d.pos)}</span> ` : ''}${esc(d.defs.join('; '))}</div>`; }
+  const res = lookup(word);
+  for (const d of res) { if (d.src !== last) { defsH += `<div class="src">${esc(d.src)}</div>`; last = d.src; } defsH += `<div>${d.p && pyKey(d.p) !== pyKey(py) ? `<span class="pyl">${esc(d.p)}</span>` : ''}${d.pos ? `<span class="tag">${esc(d.pos)}</span> ` : ''}${esc(d.defs.join('; '))}</div>`; }
   const fix = info.fixId && PYCTX.find(f => f.id === info.fixId);
   if (fix) defsH = `<div class="src">In this sentence</div><div><span class="pyl">${esc(fix.py)}</span>${esc(fix.mean || '')}</div>` + defsH;
-  if (!defsH) defsH = `<div class="status">${dictReady ? T('no_dict') : T('dict_loading')}${CAN_WRITE ? ' Use “Set meaning” to add your own.' : ''}</div>`;
-  const charsH = (word.length > 1 && word.length <= 6 && [...word].every(isHan)) ? `<div class="chars">${[...word].map(c => `<b>${esc(c)}</b> ${esc((shortMeaning(c) || '').split(';')[0])}`).join(' · ')}</div>` : '';
-  let h = `<div class="ph"><span class="pz">${esc(zhDisp(word))}</span><span class="pp">${esc(py)}</span><span class="pzy">${esc(splitPinyin(py).map(zyOf).join(' '))}</span>
-    <span class="spacer"></span><button class="ghost" data-pop="say" aria-label="Read aloud">🔊</button></div><div class="defs">${defsH}</div>${charsH}`;
+  const g = !defsH ? guessOf(word) : null;
+  if (g && canEditDict()) defsH = `<div class="src">Claude 推測 · 待你確認</div><div>${g.py && pyKey(g.py) !== pyKey(py) ? `<span class="pyl">${esc(g.py)}</span>` : ''}${esc(g.mean)}</div>`;
+  let wantGuess = false;
+  if (!defsH) {
+    if (dictReady && SAMPLE && canEditDict() && !GUESS[word] && [...word].some(isHan)) { defsH = `<div id="popGuess"><div class="src">Claude 推測</div><div class="status">Claude 正在推測… Claude is guessing…</div></div>`; wantGuess = true; }
+    else defsH = `<div class="status">${dictReady ? T('no_dict') : T('dict_loading')}${canEditDict() ? ' Use “Set meaning” to add your own.' : ''}</div>`;
+  }
+  let h = `<div class="ph">${popHead(word, py)}<span class="spacer"></span><button class="ghost" data-pop="say" aria-label="Read aloud">🔊</button></div><div class="defs">${defsH}</div>${partsHtml(word)}`;
   if (info.wb && hlNote(info.wbCur)) h += `<div class="status" style="margin-top:6px">老師解釋 Your explanation</div><div class="rt pop-note" contenteditable="true" spellcheck="false" data-pop="wbnote" id="wbNote" data-ph="Explain it for the student…">${esc(info.wbNote || '')}</div>`;
-  if (info.wb) h += `<div class="hl-pick">${HL_CATS.map(([c, zh, en]) => `<button class="swl${info.wbCur === c ? ' on' : ''}" data-pop="wbhl" data-c="${c}" title="${en}"><i class="sw ${c}"></i>${zh}</button>`).join('')}${info.wbCur ? '<button class="swl" data-pop="wbhl" data-c=""><i class="sw" style="background:transparent;border:1px dashed var(--muted)"></i>清除螢光筆</button>' : ''}</div>`;
+  if (info.wb) h += `<div class="hl-pick">${HL_CATS.map(([c, zh, en]) => `<button class="swl${info.wbCur === c ? ' on' : ''}" data-pop="wbhl" data-c="${c}" title="${esc(en)}"><i class="sw ${c}"></i>${esc(zh)}</button>`).join('')}${info.wbCur ? '<button class="swl" data-pop="wbhl" data-c=""><i class="sw" style="background:transparent;border:1px dashed var(--muted)"></i>清除螢光筆</button>' : ''}</div>`;
   if (k && (CAN_WRITE || STUDENT)) {
     if (ann && ann.t !== word) h += `<div class="phrase">Highlighted: <b>${esc(ann.t)}</b></div>`;
     h += `<div class="hl-pick">${HL_CATS.map(([c, zh, en]) => `<button class="swl${ann && ann.c === c ? ' on' : ''}" data-pop="c" data-c="${c}" title="${en}"><i class="sw ${c}"></i>${zh}</button>`).join('')}</div><div class="row">
       ${ann ? `<button class="ghost" data-pop="rm" style="margin-left:auto;font-size:13px">${T('remove')}</button>` : `<span class="status" style="margin-left:4px">${T('hl')}</span>`}</div>
       <div class="rt pop-note" contenteditable="true" spellcheck="false" data-pop="note" id="popNote" data-rtkey="popNote" data-ph="${STUDENT ? T('note_ph') : '老師解釋 · Explain it for the student…'}">${ann && (ann.note || ann.noteH) ? rtFrom(ann.note, ann.noteH) : ''}</div>`;
   } else if (ann && ann.note) h += `<div class="phrase">${richPlain(ann.note, ann.noteH)}</div>`;
-  if (CAN_WRITE) h += `<div class="foot"><button data-pop="mean">Set meaning</button>${[...word].every(isHan) ? `<button data-pop="py">${PYFIX[word] || info.fixId ? 'Pinyin fixed ✓' : 'Fix pinyin'}</button>` : ''}${info.sel && [...word].every(isHan) ? '<button data-pop="word">Treat as one word</button>' : ''}</div>`;
-  // meanings are translated into the chosen language automatically (see "automatic translation")
+  const foot = (canEditDict() ? '<button data-pop="mean">Set meaning</button>' : '') + (CAN_WRITE && [...word].every(isHan) ? `<button data-pop="py">${PYFIX[word] || info.fixId ? 'Pinyin fixed ✓' : 'Fix pinyin'}</button>` : '') + (CAN_WRITE && info.sel && [...word].every(isHan) ? '<button data-pop="word">Treat as one word</button>' : '');
+  if (foot) h += `<div class="foot">${foot}</div>`;
   const pop = document.createElement('div'); pop.className = 'pop'; pop.innerHTML = h; document.body.appendChild(pop);
   paintAllLive(pop);
   const pw = pop.offsetWidth, ph = pop.offsetHeight;
   let x = rect.left + rect.width / 2 - pw / 2, y = rect.bottom + 8;
   if (y + ph > innerHeight - 8) y = Math.max(8, rect.top - ph - 8);
   pop.style.left = Math.max(8, Math.min(x, innerWidth - pw - 8)) + 'px'; pop.style.top = y + 'px';
+  if (wantGuess) { const ed = $('#tkDoc'); const ctx = info.cx ? info.cx.full : info.wb && ed ? (edLines(ed)[info.wb.a.line] || []).map(r => r.t).join('') : ''; popGuessFill(info, ctx, dictSrc()); }
 }
 function modal(html) {
   closeModal(); const bg = document.createElement('div'); bg.className = 'modal-bg'; bg.innerHTML = html; document.body.appendChild(bg);
@@ -933,7 +1043,8 @@ async function newWordMeaning(word, sentence) {
   const d = DICT.get(word); const defs = d ? [...new Set(d.flatMap(e => e.d))].slice(0, 14) : [];
   let out = defs[0] || '';
   const ctx = String(sentence || '').trim();
-  if (SAMPLE && ctx && ctx !== word && defs.length !== 1) {
+  if (!defs.length) { const ov = otherVocab(word)[0]; if (ov) out = ov.e; else { const g = guessOf(word) || await claudeGuess(word, ctx, dictSrc()); if (g) out = g.mean; } }
+  if (SAMPLE && ctx && ctx !== word && defs.length > 1) {
     try {
       const r = await SAMPLE.json(`A Mandarin teacher marked the word 「${word}」 as a new word for an English-speaking student.\nSentence: ${ctx}\n${defs.length ? `Dictionary senses: ${defs.join(' | ')}\nChoose the sense that fits this sentence.` : 'Give its meaning in this sentence.'}\nReply as JSON {"mean": "<2–6 English words>"}.`, { modelTier: 'quick' });
       if (r && r.mean) out = String(r.mean).trim().slice(0, 60);
@@ -1171,12 +1282,26 @@ function wbApply(ed, lines) {       // redraw the whiteboard from lines, keeping
    Data: each teacher's own pages and students. On claude.ai they are kept in the teacher's private
    space of this artifact's database (data/users/<id>); anywhere else they stay in this browser.
    ========================================================= */
-const HGW_VER = 'v2';
+const HGW_VER = 'v3';
 let CAN_WRITE = false, STUDENT = false, READY = false;
 const NOTE_NUM = new Map();
 let SAMPLE = null, DB = null, DL = null, USER_ID = null, MODE = 'local';
 const T = k => ({ no_dict: '字典裡沒有這個詞 Not in the dictionary.', dict_loading: '字典載入中… Loading the dictionary…', remove: 'Remove', hl: '', note_ph: '' })[k] || k;
-const annList = () => [], resolvedAnns = () => [], paintAllLive = () => {}, rebuildLexicon = () => {};
+const annList = () => [], resolvedAnns = () => [], paintAllLive = () => {};
+// the teacher's own dictionary: meanings (cfg_gloss), how words split (cfg_parts), Claude's guesses to check (cfg_guess)
+let PARTS = {}, GUESS = {};
+const saveGloss = () => putDoc('cfg_gloss', { words: GLOSS, at: Date.now() });
+const saveParts = () => putDoc('cfg_parts', { words: PARTS, at: Date.now() });
+const saveGuess = () => putDoc('cfg_guess', { items: GUESS, at: Date.now() });
+const canEditDict = () => true, otherVocab = () => [];
+const dictSrc = () => { const P = curPage(); return P ? `${P.name ? P.name + ' · ' : ''}${P.date || ''}` : ''; };
+function loadDictData() { GLOSS = { ...((DOCS.get('cfg_gloss') || {}).words || {}) }; PARTS = { ...((DOCS.get('cfg_parts') || {}).words || {}) }; GUESS = { ...((DOCS.get('cfg_guess') || {}).items || {}) }; rebuildLexicon(); }
+function rebuildLexicon() {
+  const extra = new Set(); let max = DICT_MAX;
+  for (const w of Object.keys(GLOSS)) extra.add(w); for (const w of Object.keys(PYFIX)) if (w.length > 1) extra.add(w);
+  for (const w of extra) if (w.length > max) max = Math.min(w.length, 10);
+  LEX = { extra, max, vocabMap: new Map(), gloss: new Map() }; PY_CACHE.clear(); SEG_CACHE.clear();
+}
 const saveUI = () => lsSet(UI_KEY, UI);
 function speak(text) {
   if (!('speechSynthesis' in window)) return toast('這個瀏覽器不能朗讀 Read-aloud isn’t available here');
@@ -1207,7 +1332,7 @@ async function connect() {
     try { const s = await DB.collection('data/users/' + USER_ID).get(); for (const d of s.docs) DOCS.set(d.id, d.data()); MODE = 'cloud'; } catch (e) { MODE = 'local'; }
   }
   if (MODE === 'local') { const d = lsGet(DATA_LOCAL) || {}; for (const [k, v] of Object.entries(d)) DOCS.set(k, v); }
-  loadRules();
+  loadRules(); loadDictData();
   const chip = $('#syncChip');
   chip.textContent = MODE === 'cloud' ? '☁ 存在你的帳號 Saved to your account' : '💾 存在這個瀏覽器 Saved in this browser';
   chip.title = MODE === 'cloud' ? 'Only you can see your pages and students.' : 'Your pages stay in this browser on this computer. Use ⚙ → Backup to keep a copy.';
@@ -1327,7 +1452,7 @@ function renderSide() {
     h += `<div class="lesson hgw-pg${p.id === UI.page ? ' on' : ''}" data-page="${p.id}"><div class="hgw-pn">${p.name ? `<b>${esc(p.name)}</b> · ` : ''}<span>${esc(first.slice(0, 22))}</span></div><button class="ghost hgw-del" data-delpage="${p.id}" title="Delete this page" aria-label="Delete">✕</button></div>`;
   }
   if (!list.length) h += `<p class="status" style="padding:8px 12px">還沒有任何一頁 No pages yet.</p>`;
-  h += `<div class="side-foot"><button class="ghost" data-act="help">怎麼用 How to use</button><button class="ghost" data-act="settings">⚙ 設定 Settings</button>${sm !== 'none' ? '<button class="ghost" data-act="stus">👤 學生資料 Students</button>' : ''}<div class="hgw-credit">螢光筆暴走 ${HGW_VER} · Made by 小嵐 Learn with Blue<br>Dictionary: <a href="https://www.mdbg.net/chinese/dictionary?page=cc-cedict" target="_blank" rel="noopener">CC-CEDICT</a> (CC BY-SA 4.0) · Pinyin: pinyin-pro (MIT)</div></div>`;
+  h += `<div class="side-foot">${guessBtnHtml()}<button class="ghost" data-act="help">怎麼用 How to use</button><button class="ghost" data-act="settings">⚙ 設定 Settings</button>${sm !== 'none' ? '<button class="ghost" data-act="stus">👤 學生資料 Students</button>' : ''}<div class="hgw-credit">螢光筆暴走 ${HGW_VER} · Made by 小嵐 Learn with Blue<br>Dictionary: <a href="https://www.mdbg.net/chinese/dictionary?page=cc-cedict" target="_blank" rel="noopener">CC-CEDICT</a> (CC BY-SA 4.0) · Pinyin: pinyin-pro (MIT)</div></div>`;
   side.innerHTML = h;
 }
 function render() {
@@ -1488,7 +1613,7 @@ async function restore(file) {
     const d = JSON.parse(await file.text()); const docs = d && d.docs; if (!docs || typeof docs !== 'object') throw new Error('not a backup');
     if (!await askConfirm('還原備份？ Restore?', `加入備份裡的 ${Object.keys(docs).length} 筆資料（同一筆會被備份蓋過）。 Adds the pages and students from the backup.`, 'Restore')) return;
     for (const [k, v] of Object.entries(docs)) if (/^(page|stu|ex|cfg)_[\w-]+$/.test(k) && v && typeof v === 'object') putDoc(k, v);
-    loadRules(); toast('還原好了 Restored'); render();
+    loadRules(); loadDictData(); toast('還原好了 Restored'); render();
   } catch (e) { toast('這不是備份檔 That isn’t a backup file'); }
 }
 
@@ -1685,6 +1810,15 @@ document.addEventListener('click', async e => {
   if (pa && POP) {
     const act = pa.dataset.pop;
     if (act === 'say') speak(POP.word);
+    if (act === 'parts') { const wd = POP.word; closePop(); return partsDialog(wd); }
+    if (act === 'mean') {
+      const wd = POP.word; closePop();
+      const v = await askText(`「${wd}」的意思 Meaning of ${wd}`, '英文意思（你所有的白板都用這個） English meaning, used everywhere', GLOSS[wd] || shortMeaning(wd));
+      if (v == null) return;
+      if (v.trim()) GLOSS[wd] = v.trim(); else delete GLOSS[wd];
+      if (v.trim() && GUESS[wd] && GUESS[wd].status === 'pending') { GUESS[wd].status = 'ok'; GUESS[wd].mean = v.trim(); saveGuess(); }
+      saveGloss(); rebuildLexicon(); render(); toast('意思存好了 Meaning saved'); return;
+    }
     if (act === 'wbhl') { const info = POP; wbHighlight(info.wb, pa.dataset.c); closePop(); if (hlNote(pa.dataset.c)) { const r = pa.getBoundingClientRect(); openPop({ left: r.left, right: r.right, top: r.top - 60, bottom: r.top - 40, width: r.width, height: 20 }, { ...info, wbCur: 'y', wbNote: wbNoteOf(info.wb) }); setTimeout(() => $('#wbNote')?.focus(), 0); } }
     return;
   }
@@ -1703,6 +1837,7 @@ document.addEventListener('click', async e => {
   if (act === 'settings') return settingsDialog();
   if (act === 'stus') return studentsDialog(curPage()?.sid);
   if (act === 'help') return helpDialog();
+  if (act === 'guesses') return guessDialog();
   if (act === 'backup') return backup();
   if (act === 'restore') return $('#fileIn').click();
   if (act === 'rulesout') return exportRules();

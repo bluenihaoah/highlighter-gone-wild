@@ -1,4 +1,4 @@
-Highlighter Gone Wild v2: teachers set their own highlighters, symbol rules and PDF contents; export/import rule sets
+v3: dictionary pop-up (pinyin above, zhuyin right), set your own meanings, editable word splits, Claude guesses to confirm
 
 Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
 Claude-Session: https://claude.ai/code/session_016ai15Sy7RaMR2m4Ts1bLRv
