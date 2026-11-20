@@ -1,5 +1,5 @@
 <!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>螢光筆暴走 Highlighter Gone Wild</title>
+<title>螢光筆大爆走 Highlighter Gone Wild</title>
 <meta name="description" content="A class whiteboard for Mandarin teachers: live pinyin / 注音, four highlighter colours, a dictionary, and a tidy PDF for the student.">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🖍%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -571,7 +571,12 @@ body.py-zy .td-wb{line-height:2}
 .qsec-ai{font-size:12px;color:var(--accent-text);background:var(--accent-soft);border-radius:999px;padding:2px 10px;margin-left:8px}.q-follow{margin:-4px 0 12px 44px;font-size:14px;color:var(--muted);display:flex;gap:8px;align-items:baseline}.q-follow>span{flex:none;font-size:11px;font-weight:700;color:var(--accent-text);border:1px solid var(--line);border-radius:6px;padding:0 6px}.q-follow .zh{font-size:calc(var(--fs)*.7)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 
-/* 螢光筆暴走 additions */
+/* 螢光筆大爆走 additions */
+body.wb-max #side,body.wb-max #btnSide,body.wb-max .hgw-stu,body.wb-max .td-help{display:none!important}
+body.wb-max .inner{max-width:none;padding:10px 16px 16px}
+body.wb-max .td-card{margin:0}
+body.wb-max .td-wb{min-height:calc(100vh - var(--hdr-h,64px) - 110px);max-height:none}
+.wb-maxbtn{font-size:13px;padding:3px 10px;white-space:nowrap}
 .hgw-brand{display:flex;align-items:center;gap:8px}.hgw-logo{font-size:24px;line-height:1}.hgw-brand .name{font-family:var(--zh);font-weight:700;font-size:18px;line-height:1.1;display:flex;flex-direction:column}.hgw-brand small{font-family:Inter,sans-serif;font-weight:500;font-size:11px;color:var(--muted)}
 .hgw-new{padding:10px 10px 4px}.hgw-new button{width:100%}.hgw-filter{padding:4px 10px}.hgw-filter select{width:100%}
 .hgw-date{font-size:12px;color:var(--muted);padding:10px 12px 2px;font-variant-numeric:tabular-nums}
@@ -601,7 +606,7 @@ body.py-zy .td-wb{line-height:2}
 </style></head><body>
 <header>
   <button class="ghost" id="btnSide" title="Show or hide the page list" aria-label="Pages">☰</button>
-  <div class="brand hgw-brand"><span class="hgw-logo">🖍</span><span class="name">螢光筆暴走<small>Highlighter Gone Wild</small></span></div>
+  <div class="brand hgw-brand"><span class="hgw-logo">🖍</span><span class="name">螢光筆大爆走<small>Highlighter Gone Wild</small></span></div>
   <div class="crumb" id="crumb"></div>
   <div class="spacer"></div>
   <span class="chip-sync" id="syncChip">連線中… Connecting</span>
@@ -620,7 +625,7 @@ body.py-zy .td-wb{line-height:2}
 <div id="pdfStage"></div>
 <script src="https://cdn.jsdelivr.net/npm/pinyin-pro@3.26.0/dist/index.js"></script>
 <script>
-/* 螢光筆暴走 Highlighter Gone Wild — made by 小嵐 (Learn with Blue).
+/* 螢光筆大爆走 Highlighter Gone Wild — made by 小嵐 (Learn with Blue).
    Dictionary: CC-CEDICT (https://www.mdbg.net/chinese/dictionary?page=cc-cedict), CC BY-SA 4.0.
    Pinyin: pinyin-pro (MIT). Simplified conversion: opencc-js (MIT). PDF: html2pdf.js (MIT). */
 const DICT_URL = 'https://cdn.jsdelivr.net/npm/hanzi@2.1.5/lib/data/cedict_ts.u8.js';
@@ -909,7 +914,7 @@ const richPlain = (text, html) => docLines({ said: text || '', html: html || '' 
 let POP = null;
 function closePop() { $('.pop')?.remove(); POP = null; }
 
-/* ---------------- dictionary extras (shared by 跟小嵐學中文 and 螢光筆暴走) ----------------
+/* ---------------- dictionary extras (shared by 跟小嵐學中文 and 螢光筆大爆走) ----------------
    PARTS: how the teacher splits a word, {詞: [{t, m}]}  ·  GUESS: Claude's guesses for words the dictionary doesn't have,
    {詞: {mean, py, ctx, src, at, status: pending | ok | no}} — the teacher confirms them in 字典待確認. */
 const pyKey = p => String(p || '').toLowerCase().replace(/[\s'’\-]/g, '');
@@ -1303,13 +1308,13 @@ function wbApply(ed, lines) {       // redraw the whiteboard from lines, keeping
 }
 
 /* =========================================================
-   螢光筆暴走 Highlighter Gone Wild — a class whiteboard for Mandarin teachers
+   螢光筆大爆走 Highlighter Gone Wild — a class whiteboard for Mandarin teachers
    Type while the student talks: pinyin / 注音 appear as you type, mark words with four highlighter
    colours, click a word for the dictionary, then export a tidy PDF for the student.
    Data: each teacher's own pages and students. On claude.ai they are kept in the teacher's private
    space of this artifact's database (data/users/<id>); anywhere else they stay in this browser.
    ========================================================= */
-const HGW_VER = 'v7';
+const HGW_VER = 'v8';
 let CAN_WRITE = false, STUDENT = false, READY = false;
 const NOTE_NUM = new Map();
 let SAMPLE = null, DB = null, DL = null, USER_ID = null, MODE = 'local';
@@ -1515,7 +1520,7 @@ function renderSide() {
     h += `<div class="lesson hgw-pg${p.id === UI.page ? ' on' : ''}" data-page="${p.id}"><div class="hgw-pn">${p.name ? `<b>${esc(p.name)}</b> · ` : ''}<span>${esc(first.slice(0, 22))}</span></div><button class="ghost hgw-del" data-delpage="${p.id}" title="Delete this page" aria-label="Delete">✕</button></div>`;
   }
   if (!list.length) h += `<p class="status" style="padding:8px 12px">還沒有任何一頁 No pages yet.</p>`;
-  h += `<div class="side-foot">${guessBtnHtml()}<button class="ghost" data-act="help">怎麼用 How to use</button><button class="ghost" data-act="settings">⚙ 設定 Settings</button>${sm !== 'none' ? '<button class="ghost" data-act="stus">👤 學生資料 Students</button>' : ''}<div class="hgw-credit">螢光筆暴走 ${HGW_VER} · Made by 小嵐 Learn with Blue<br>Dictionary: <a href="https://www.mdbg.net/chinese/dictionary?page=cc-cedict" target="_blank" rel="noopener">CC-CEDICT</a> (CC BY-SA 4.0) · Pinyin: pinyin-pro (MIT)</div></div>`;
+  h += `<div class="side-foot">${guessBtnHtml()}<button class="ghost" data-act="help">怎麼用 How to use</button><button class="ghost" data-act="settings">⚙ 設定 Settings</button>${sm !== 'none' ? '<button class="ghost" data-act="stus">👤 學生資料 Students</button>' : ''}<div class="hgw-credit">螢光筆大爆走 ${HGW_VER} · Made by 小嵐 Learn with Blue<br>Dictionary: <a href="https://www.mdbg.net/chinese/dictionary?page=cc-cedict" target="_blank" rel="noopener">CC-CEDICT</a> (CC BY-SA 4.0) · Pinyin: pinyin-pro (MIT)</div></div>`;
   side.innerHTML = h;
 }
 function render() {
@@ -1525,6 +1530,8 @@ function render() {
   $$('#pyMode button').forEach(b => b.classList.toggle('on', b.dataset.v === UI.py));
   $$('#zhsMode button').forEach(b => b.classList.toggle('on', b.dataset.v === (UI.zhs ? 's' : 't')));
   renderSide();
+  document.body.classList.toggle('wb-max', !!UI.wbMax);
+  { const hd = document.querySelector('header'); if (hd) document.documentElement.style.setProperty('--hdr-h', hd.offsetHeight + 'px'); }
   const inner = $('#inner'); if (!READY) return;
   // typing right now: only redraw the whiteboard (pinyin, 繁／簡), never pull the page out from under the teacher
   const ed0 = $('#tkDoc'); if (ed0 && document.activeElement === ed0 && curPage()) { wbApply(ed0, edLines(ed0)); return; }
@@ -1532,13 +1539,13 @@ function render() {
   let h = '';
   if (sm !== 'none') h += `<div class="card hgw-stu"><label for="stuIn"><b>學生 Student</b></label><input id="stuIn" list="stuList" placeholder="輸入學生名字 Type the student’s name" autocomplete="off"><datalist id="stuList">${students().map(s => `<option value="${esc(s.name)}">`).join('')}</datalist><button class="primary" data-act="stustart">開始上課 Start</button><button data-act="stus">👤 學生資料 Students</button></div>`;
   if (!P) {
-    h += `<div class="empty"><div class="big">🖍 螢光筆暴走</div><p>${sm === 'none' ? '開一頁新的白板，就可以開始上課。 Open a new page to start.' : '輸入學生名字，按「開始上課」。 Type the student’s name and press Start.'}</p>${sm === 'none' ? '<button class="primary" data-act="newpage">＋ 新的一頁 New page</button>' : ''}<p class="status" style="margin-top:14px">第一次用？按左下角的「怎麼用 How to use」。</p></div>`;
+    h += `<div class="empty"><div class="big">🖍 螢光筆大爆走</div><p>${sm === 'none' ? '開一頁新的白板，就可以開始上課。 Open a new page to start.' : '輸入學生名字，按「開始上課」。 Type the student’s name and press Start.'}</p>${sm === 'none' ? '<button class="primary" data-act="newpage">＋ 新的一頁 New page</button>' : ''}<p class="status" style="margin-top:14px">第一次用？按左下角的「怎麼用 How to use」。</p></div>`;
     inner.innerHTML = h; $('#crumb').textContent = ''; return;
   }
   const st = stuOf(P.sid);
   $('#crumb').textContent = `${P.name || ''}${P.name ? ' · ' : ''}${P.date || ''}`;
   h += `<div class="card td-card">
-      <div class="td-head"><b style="font-family:var(--zh)">${P.name ? esc(P.name) + ' · ' : ''}${esc(P.date || '')}</b>${st && st.tz ? `<span class="status">${esc(st.tz)}</span>` : ''}${st ? `<button class="ghost" data-act="stus" style="font-size:13px;padding:2px 8px">✎ ${esc(st.name)} 的資料</button>` : ''}<span class="spacer"></span><span class="status" id="tdSaved">${P.said ? '已儲存 Saved' : ''}</span></div>
+      <div class="td-head"><b style="font-family:var(--zh)">${P.name ? esc(P.name) + ' · ' : ''}${esc(P.date || '')}</b>${st && st.tz ? `<span class="status">${esc(st.tz)}</span>` : ''}${st ? `<button class="ghost" data-act="stus" style="font-size:13px;padding:2px 8px">✎ ${esc(st.name)} 的資料</button>` : ''}<span class="spacer"></span><span class="status" id="tdSaved">${P.said ? '已儲存 Saved' : ''}</span><button class="ghost wb-maxbtn" data-act="wbmax" title="${UI.wbMax ? '還原 Exit full screen (Esc)' : '白板最大化 Maximize the whiteboard'}">${UI.wbMax ? '🗗 還原' : '⛶ 最大化'}</button></div>
       <div id="tkDoc" class="td-ed td-wb rt" data-rtkey="tkDoc" contenteditable="true" spellcheck="false" role="textbox" aria-multiline="true" aria-label="Whiteboard" data-ph="開始打字… Start typing what the student says…">${wbHtml(docLines(P))}</div>
       <p class="status td-help">${rulesHelpHtml()}</p>
     </div>`;
@@ -1748,7 +1755,7 @@ async function doExport(o) {
     if (noteHtml.length) body += `<div class="qsh">今日筆記 <span class="en">${EN('Today’s notes')}</span></div><div class="box">${noteHtml.map(h => `<div class="para tdp">${h}</div>`).join('')}</div>`;
   }
   if (UI.sig) body += `<div class="wm">${esc(UI.sig)}</div>`;
-  body += `<div class="foot">${name ? esc(name) + ' · ' : ''}${esc(date)} · 螢光筆暴走 Highlighter Gone Wild</div>`;
+  body += `<div class="foot">${name ? esc(name) + ' · ' : ''}${esc(date)} · 螢光筆大爆走 Highlighter Gone Wild</div>`;
   UI.py = prevPy;
   const css = `.pdf{width:700px;background:#fff;color:#222;font-family:"Noto Serif TC","Microsoft JhengHei",serif;padding:4px}
     .pdf .hd{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:3px solid #3e7a96;padding-bottom:8px;margin-bottom:12px}
@@ -1879,7 +1886,16 @@ document.addEventListener('mouseup', e => {
   skipClick = true; setTimeout(() => skipClick = false, 50);
   openPop(r.getBoundingClientRect(), { k: '', word, wb: { a: wbPos(ed, r.startContainer, r.startOffset), b: wbPos(ed, r.endContainer, r.endOffset) }, wbCur: '' });
 });
-document.addEventListener('keydown', e => { if (e.key === 'Escape') { closePop(); closeModal(); } });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { if (UI.wbMax && !POP && !document.querySelector('.modal-bg')) wbMax(false); closePop(); closeModal(); } });
+// 白板最大化: hide the page list and the student bar, let the board fill the screen (and go browser full screen when allowed)
+function wbMax(on) {
+  tdSaveNow(); document.activeElement?.blur?.(); UI.wbMax = !!on; saveUI();
+  const de = document.documentElement;
+  try { if (on && !document.fullscreenElement && de.requestFullscreen) de.requestFullscreen().catch(() => {}); else if (!on && document.fullscreenElement) document.exitFullscreen().catch(() => {}); } catch (e) {}
+  render(); setTimeout(() => { const ed = $('#tkDoc'); if (ed) ed.focus(); }, 60);
+}
+addEventListener('resize', () => { const hd = document.querySelector('header'); if (hd) document.documentElement.style.setProperty('--hdr-h', hd.offsetHeight + 'px'); });
+document.addEventListener('fullscreenchange', () => { if (!document.fullscreenElement && UI.wbMax) { UI.wbMax = false; saveUI(); render(); } });
 document.addEventListener('click', async e => {
   const t = e.target; if (!t.closest) return;
   const pa = t.closest('[data-pop]');
@@ -1911,6 +1927,7 @@ document.addEventListener('click', async e => {
   if (act === 'newpage') { const P = curPage(); const st = stuMode() !== 'none' && P ? stuOf(P.sid) : null; return newPage(st); }
   if (act === 'stustart') return startWith($('#stuIn')?.value);
   if (act === 'settings') return settingsDialog();
+  if (act === 'wbmax') return wbMax(!UI.wbMax);
   if (act === 'stus') return studentsDialog(curPage()?.sid);
   if (act === 'help') return helpDialog();
   if (act === 'guesses') return guessDialog();
