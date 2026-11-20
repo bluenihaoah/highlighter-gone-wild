@@ -384,7 +384,7 @@ body.py-zy .td-wb{line-height:2}
 .td-l{min-height:1.2em}.td-gap{height:.6em}
 .f-b,.f-b .zh{font-weight:700}
 .f-u,.f-u .zc,.f-u ruby{text-decoration:underline}
-.f-s,.f-s .zc,.f-s ruby{text-decoration:line-through}
+.f-s,.f-s .zc,.f-s ruby{text-decoration:line-through}.f-s ruby{text-decoration-thickness:1.5px;text-decoration-color:#8a8a8a}.f-s,.f-s .zh{color:#a3a3a3}
 .f-m,.f-m .zh{color:#1d5fa8;font-weight:700}
 .td-word{box-shadow:inset 0 -2px 0 var(--ok);padding:0 1px}
 .td-en{font-size:14px;color:var(--ok);margin-left:4px}
@@ -417,8 +417,8 @@ body.py-zy .td-wb{line-height:2}
 .pat{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:10px 0;padding:10px 12px;background:var(--sunk);border-radius:10px}
 .pat .chip{background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:4px 10px;font-family:var(--zh);font-size:18px}
 .pat .chip.k{background:var(--paper);color:#1d5fa8;border-color:#1d5fa8;font-weight:700}
-.pat .chip.c-c,.pat .chip.c-s,.pat .chip.c-v,.pat .chip.c-n,.pat .chip.c-a,.pat .chip.c-t,.pat .chip.c-o{font-weight:700;font-family:var(--ui)}
-.c-c,.zh .c-c{color:#b8336a}.c-s,.zh .c-s{color:#9b2c8f}.c-v,.zh .c-v{color:#3f8f2a}.c-n,.zh .c-n{color:#c46a12}.c-a,.zh .c-a{color:#1f7f86}.c-t,.zh .c-t{color:#8a6d1d}.c-o,.zh .c-o{color:#5b6b8a}.c-k,.zh .c-k{color:#1d5fa8;font-weight:700}
+.pat .chip.c-u,.pat .chip.c-m,.pat .chip.c-c,.pat .chip.c-s,.pat .chip.c-v,.pat .chip.c-n,.pat .chip.c-a,.pat .chip.c-t,.pat .chip.c-o{font-weight:700;font-family:var(--ui)}
+.c-u,.zh .c-u{color:#7d3cb5}.c-m,.zh .c-m{color:#a67c00}.c-c,.zh .c-c{color:#b8336a}.c-s,.zh .c-s{color:#9b2c8f}.c-v,.zh .c-v{color:#3f8f2a}.c-n,.zh .c-n{color:#c46a12}.c-a,.zh .c-a{color:#1f7f86}.c-t,.zh .c-t{color:#8a6d1d}.c-o,.zh .c-o{color:#5b6b8a}.c-k,.zh .c-k{color:#1d5fa8;font-weight:700}
 .patkey{display:flex;flex-wrap:wrap;gap:4px 14px;margin:-4px 0 10px 4px;font-size:12px}.patkey b{font-family:var(--ui)}
 .gk,.zh .gk{font-weight:700;color:#0f4c81;text-decoration:underline;text-decoration-color:var(--accent);text-underline-offset:3px}
 .ex .zh{white-space:pre-line}
@@ -560,6 +560,15 @@ body.py-zy .td-wb{line-height:2}
 .gs-wrap{overflow-x:auto}.gs{width:100%;border-collapse:collapse;font-size:14px}.gs th{text-align:left;font-size:12px;color:var(--muted);font-weight:600;padding:6px;border-bottom:1px solid var(--line)}
 .gs td{padding:8px 6px;border-bottom:1px solid var(--line);vertical-align:top}.gs-w{font-family:var(--zh);font-size:20px;white-space:nowrap}.gs-p{color:var(--py);white-space:nowrap}.gs-m{width:100%;min-width:140px}.gs-c{font-family:var(--zh);font-size:13px;max-width:260px}.gs-a{white-space:nowrap}.gs-a button{padding:3px 10px;margin-left:4px}
 .side-foot .badge{display:inline-block;min-width:18px;padding:0 6px;border-radius:9px;background:#d49a1f;color:#1b1b1b;font-size:11px;font-weight:700;text-align:center;margin-left:4px}
+.act-card{padding:16px 20px}.act-h{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:8px}.act-t{font-family:var(--zh);font-weight:700;font-size:calc(var(--fs)*.9);color:var(--accent-text)}.act-en{color:var(--muted);font-size:14px}.act-en-p{font-size:15px;color:var(--muted)}
+.act-imgs{display:flex;flex-wrap:wrap;gap:12px;margin:10px 0 14px}.act-imgs img{max-width:min(100%,420px);max-height:420px;border-radius:8px;border:1px solid var(--line)}.act-imgs.ed{gap:8px}.act-th{position:relative;display:inline-block}.act-th img{max-height:110px;max-width:160px}.act-th button{position:absolute;top:2px;right:2px;background:#fff;padding:0 6px}
+.set-line{display:flex;gap:6px;align-items:center;flex-wrap:wrap}.set-chk{display:inline-flex;align-items:center;gap:4px;font-size:13px}
+.bk-off{border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin:0 0 12px}.bk-pv{display:flex;align-items:center;gap:8px;margin-top:8px;flex-wrap:wrap}.bk-pv canvas{max-width:260px;border:1px solid var(--line);border-radius:4px;display:block}
+.lesson[draggable="true"],.bh[draggable="true"]{cursor:grab}.sd-drag{opacity:.45}.sd-before{box-shadow:inset 0 3px 0 var(--accent)}.sd-after{box-shadow:inset 0 -3px 0 var(--accent)}
+.dr .sol.ro-sol{color:var(--ink);font-weight:500;font-size:calc(var(--fs)*.75)}.ro-mis{background:transparent;border:2px solid var(--bad);border-radius:6px;padding:0 4px;margin:0 2px;color:var(--ink)}
+.edg{border:1px solid var(--line);border-radius:10px;padding:8px 10px;margin-bottom:10px;background:var(--paper)}.edg.empty{opacity:.7}.edg-h{display:flex;gap:6px;align-items:center;margin-bottom:6px}.edg-n{flex:none;width:24px;height:24px;border-radius:50%;background:var(--accent);color:var(--accent-ink);display:inline-grid;place-items:center;font-size:13px;font-weight:700}.edg-t{flex:1;min-width:0;font-family:var(--zh);font-size:16px;font-weight:600}
+.ed-grid #edG textarea{height:auto;min-height:44px}#edG{max-height:60vh;overflow:auto;padding-right:4px}
+.qsec-ai{font-size:12px;color:var(--accent-text);background:var(--accent-soft);border-radius:999px;padding:2px 10px;margin-left:8px}.q-follow{margin:-4px 0 12px 44px;font-size:14px;color:var(--muted);display:flex;gap:8px;align-items:baseline}.q-follow>span{flex:none;font-size:11px;font-weight:700;color:var(--accent-text);border:1px solid var(--line);border-radius:6px;padding:0 6px}.q-follow .zh{font-size:calc(var(--fs)*.7)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 
 /* 螢光筆暴走 additions */
@@ -760,6 +769,12 @@ function charPinyin(text) {
     const w = text.slice(t.s, t.e); const syls = dictSyllables(w);
     if (syls && syls.length === w.length) syls.forEach((p, n) => { if (!out[t.s + n]) out[t.s + n] = p; });
     else for (let n = t.s; n < t.e; n++) if (!out[n]) { const s1 = dictSyllables(text[n]); if (s1) out[n] = s1[0]; }
+  }
+  // 得 děi "have to, should": after a person or 就／還／也… (or at the start of a clause), before a verb — 你得好好睡覺, 得先換錢
+  // (not 得到 / 得了 / 覺得 …: a dictionary word or one of these next characters keeps its own reading)
+  for (let n = 0; n < text.length; n++) {
+    if (text[n] !== '得') continue; const prev = text[n - 1] || '', next = text[n + 1] || '';
+    if ((!isHan(prev) || /[我你妳您他她它們誰也還都就可總必只又再]/.test(prev)) && isHan(next) && !/[到了罪獎分病意知體失主出勝益當逞過很太]/.test(next) && !DICT.has(text.slice(n, n + 2)) && !(isHan(prev) && DICT.has(prev + '得'))) out[n] = 'děi';
   }
   // the teacher's corrections win over everything (longer words last, so they beat single characters)
   for (const w of Object.keys(PYFIX).sort((a, b) => a.length - b.length)) {
@@ -1125,7 +1140,7 @@ function edLines(root) {
   const lines = [[]]; const cur = () => lines[lines.length - 1];
   const walk = (node, f) => {
     for (const n of node.childNodes) {
-      if (n.nodeType === 3) { const t = n.nodeValue.replace(/ /g, ' ').replace(/[\r\n]+/g, ' '); if (t) cur().push({ t, ...f }); continue; }
+      if (n.nodeType === 3) { const t = n.nodeValue.replace(/\u200b/g, '').replace(/ /g, ' ').replace(/[\r\n]+/g, ' '); if (t) cur().push({ t, ...f }); continue; }
       if (n.nodeType !== 1) continue;
       const tag = n.tagName;
       if (tag === 'RT' || tag === 'RP' || tag === 'SUP' || (n.classList && (n.classList.contains('zv') || n.classList.contains('nm') || n.classList.contains('hl-mean') || n.classList.contains('hl-note')))) continue;   // pinyin / 注音 / note numbers drawn by the app
@@ -1133,8 +1148,8 @@ function edLines(root) {
       const block = /^(DIV|P|LI|H[1-6]|BLOCKQUOTE)$/.test(tag);
       if (block && cur().length) lines.push([]);
       const st = n.style || {}; const dec = (st.textDecoration || '') + ' ' + (st.textDecorationLine || '');
-      const hv = hlOf(n);
-      walk(n, { b: f.b || /^(B|STRONG)$/.test(tag) || /bold|[6-9]00/.test(st.fontWeight || ''), u: f.u || tag === 'U' || /underline/.test(dec), s: f.s || /^(S|STRIKE|DEL)$/.test(tag) || /line-through/.test(dec), h: hv === null ? f.h : hv, m: hv === null ? f.m : (n.dataset && n.dataset.m) || '', n: hv === null ? f.n : (n.dataset && n.dataset.n) || '' });
+      const hv = hlOf(n); const cls = n.classList || { contains: () => false }; 
+      walk(n, { b: f.b || /^(B|STRONG)$/.test(tag) || /bold|[6-9]00/.test(st.fontWeight || '') || cls.contains('f-b'), u: f.u || tag === 'U' || /underline/.test(dec) || cls.contains('f-u'), s: f.s || /^(S|STRIKE|DEL)$/.test(tag) || /line-through/.test(dec) || cls.contains('f-s'), h: hv === null ? f.h : hv, m: hv === null ? f.m : (n.dataset && n.dataset.m) || '', n: hv === null ? f.n : (n.dataset && n.dataset.n) || '' });
       if (block && cur().length) lines.push([]);
     }
   };
@@ -1220,7 +1235,9 @@ const WB_SKIP = 'rt, rp, .zv, sup, .hl-mean, .hl-note';
 function wbLock(ed) { $$(WB_SKIP, ed).forEach(x => x.setAttribute('contenteditable', 'false')); }
 function wbCaret(ed) {          // {line, ch}: which line and how many typed characters before the cursor
   const sel = getSelection(); if (!sel.rangeCount || !ed.contains(sel.anchorNode)) return null;
-  const r = sel.getRangeAt(0); let line = r.endContainer; while (line && line.parentNode !== ed) line = line.parentNode;
+  const r = sel.getRangeAt(0);
+  if (r.endContainer === ed) return { line: Math.max(0, r.endOffset), ch: 0 };   // the cursor sits between lines (right after Enter)
+  let line = r.endContainer; while (line && line.parentNode !== ed) line = line.parentNode;
   if (!line) return null; const li = [...ed.childNodes].indexOf(line);
   const pre = document.createRange(); pre.setStart(line, 0); pre.setEnd(r.endContainer, r.endOffset);
   const box = document.createElement('div'); box.appendChild(pre.cloneContents()); $$(WB_SKIP, box).forEach(x => x.remove());
@@ -1270,15 +1287,19 @@ function wbHighlight(wb, c) {        // colour (or clear) the text between wb.a 
   if (hlAuto(c)) fillBoxMeanings(ed);
 }
 let WB_T = null, WB_COMPOSING = false;
-function wbSchedule(ed) { clearTimeout(WB_T); WB_T = setTimeout(() => wbRedraw(ed), 650); }
+function wbSchedule(ed) { clearTimeout(WB_T); WB_T = setTimeout(() => wbRedraw(ed), 400); }
 function wbRedraw(ed) {
   if (!ed || !ed.isConnected) return; if (WB_COMPOSING) return wbSchedule(ed);
   wbApply(ed, edLines(ed));
 }
-function wbApply(ed, lines) {       // redraw the whiteboard from lines, keeping the cursor where it was
-  const h = wbHtml(lines); if (h === ed.innerHTML) return;
-  const focused = document.activeElement === ed; const pos = focused ? wbCaret(ed) : null; const top = ed.scrollTop;
-  ed.innerHTML = h; wbLock(ed); ed.scrollTop = top; if (focused) wbSetCaret(ed, pos);
+function wbApply(ed, lines) {       // redraw the whiteboard from lines, keeping the cursor where it was — only the lines that changed
+  const focused = document.activeElement === ed; const pos = focused ? wbCaret(ed) : null;
+  if (pos) while (lines.length <= pos.line) lines.push([]);   // keep the new empty line made with Enter (otherwise the cursor jumped to the top)
+  const sigs = lines.map(rs => JSON.stringify(rs)), old = ed._sig || [], kids = [...ed.childNodes], top = ed.scrollTop;
+  const same = kids.length === lines.length && kids.every(k => k.nodeType === 1 && k.classList.contains('td-l'));
+  if (!same) { const h = wbHtml(lines); if (h === ed.innerHTML) { ed._sig = sigs; return; } ed.innerHTML = h; wbLock(ed); }
+  else { let ch = false; lines.forEach((rs, i) => { if (old[i] === sigs[i]) return; const d = document.createElement('div'); d.innerHTML = wbHtml([rs]); const nl = d.firstChild; kids[i].replaceWith(nl); wbLock(nl); ch = true; }); if (!ch) { ed._sig = sigs; return; } }
+  ed._sig = sigs; ed.scrollTop = top; if (focused) wbSetCaret(ed, pos);
 }
 
 /* =========================================================
@@ -1288,7 +1309,7 @@ function wbApply(ed, lines) {       // redraw the whiteboard from lines, keeping
    Data: each teacher's own pages and students. On claude.ai they are kept in the teacher's private
    space of this artifact's database (data/users/<id>); anywhere else they stay in this browser.
    ========================================================= */
-const HGW_VER = 'v4';
+const HGW_VER = 'v7';
 let CAN_WRITE = false, STUDENT = false, READY = false;
 const NOTE_NUM = new Map();
 let SAMPLE = null, DB = null, DL = null, USER_ID = null, MODE = 'local';
@@ -1431,18 +1452,54 @@ function startWith(name) {
   if (pg) openPage(pg.id); else newPage(st);
 }
 let WB_SAVE_T = null;
-function saveTalkDoc(text, html) {          // called by the whiteboard whenever it changes
-  const id = UI.page; const D = DOCS.get(id); if (!D) return;
+function saveTalkDoc(text, html, pageId) {          // called by the whiteboard whenever it changes
+  const id = pageId || UI.page; const D = DOCS.get(id); if (!D) return;
   D.said = clean(text); D.html = html; D.at = Date.now();
   const el = $('#tdSaved'); if (el) el.textContent = '儲存中… Saving';
   clearTimeout(WB_SAVE_T);
   WB_SAVE_T = setTimeout(() => { putDoc(id, D); const e2 = $('#tdSaved'); if (e2) e2.textContent = '已儲存 Saved'; renderSide(); }, 600);
 }
+// typing never waits for saving: the page is saved a moment after you stop (and right away when you leave it)
+let TDC = null;
 function tdChanged() {
   const ed = $('#tkDoc'); if (!ed) return;
-  const lines = edLines(ed); saveTalkDoc(linesText(lines), linesHtml(lines));
+  if (TDC) clearTimeout(TDC.t); TDC = { ed, id: UI.page, t: setTimeout(tdSaveNow, 350) };
   wbSchedule(ed);
 }
+function tdSaveNow() { if (!TDC) return; const { ed, id, t } = TDC; clearTimeout(t); TDC = null; const lines = edLines(ed); saveTalkDoc(linesText(lines), linesHtml(lines), id); }
+// typing right after (or before) a highlight starts plain text, so the colour never spreads to new words or the next line
+function hlEdge(box) {
+  const sel = getSelection(); if (!sel.rangeCount || !sel.isCollapsed) return;
+  let n = sel.anchorNode, off = sel.anchorOffset; if (!n || !box.contains(n)) return;
+  if (n.nodeType === 1 && n.childNodes.length) {
+    let c = off > 0 ? n.childNodes[off - 1] : n.childNodes[0]; const back = off > 0;
+    while (c && c.nodeType === 1 && c.childNodes.length && !/^(BR)$/.test(c.tagName)) c = back ? c.lastChild : c.firstChild;
+    if (c && c.nodeType === 3) { n = c; off = back ? c.length : 0; }
+  }
+  const el = n.nodeType === 3 ? n.parentElement : n; const HLS = 'mark.f-hl, .f-hl, [style*="background"]';
+  let hl = el && el.closest(HLS); if (!hl || !box.contains(hl) || hl === box || !hlOf(hl)) return;
+  while (hl.parentElement && hl.parentElement !== box && hl.parentElement.closest(HLS) && box.contains(hl.parentElement)) hl = hl.parentElement;
+  const plain = r => { const d = document.createElement('div'); d.appendChild(r.cloneContents()); $$(WB_SKIP, d).forEach(x => x.remove()); return d.textContent.replace(/\u200b/g, ''); };
+  const pre = document.createRange(); pre.selectNodeContents(hl); pre.setEnd(n, off); const before = plain(pre);
+  const whole = document.createRange(); whole.selectNodeContents(hl); const all = plain(whole);
+  const atEnd = before.length >= all.length, atStart = !before.length && all.length > 0;
+  if (!atEnd && !atStart) return;
+  const t = document.createTextNode('\u200b'); if (atEnd) hl.after(t); else hl.before(t);
+  const r = document.createRange(); r.setStart(t, atEnd ? 1 : 0); r.collapse(true); sel.removeAllRanges(); sel.addRange(r);
+  return true;
+}
+document.addEventListener('keydown', e => {
+  if (e.ctrlKey || e.metaKey || e.altKey || e.isComposing) return;
+  if (!(e.key.length === 1 || e.key === 'Process' || e.keyCode === 229 || e.key === 'Enter')) return;
+  const box = e.target.closest && e.target.closest('.rt'); if (box) hlEdge(box);
+}, true);
+document.addEventListener('beforeinput', e => {
+  if (e.inputType !== 'insertText' || !e.data) return;
+  const box = e.target.closest && e.target.closest('.rt'); if (!box || !hlEdge(box)) return;
+  e.preventDefault(); const sel = getSelection(), n = sel.anchorNode, off = sel.anchorOffset;
+  n.insertData(off, e.data); const r = document.createRange(); r.setStart(n, off + e.data.length); r.collapse(true); sel.removeAllRanges(); sel.addRange(r);
+  box.dispatchEvent(new Event('input', { bubbles: true }));
+}, true);
 
 /* ---------------- screen ---------------- */
 function renderSide() {
@@ -1462,6 +1519,7 @@ function renderSide() {
   side.innerHTML = h;
 }
 function render() {
+  tdSaveNow();   // anything typed a moment ago is saved to its own page first
   document.body.classList.remove('py-off', 'py-py', 'py-zy'); document.body.classList.add('py-' + (UI.py || 'py'));
   document.documentElement.style.setProperty('--fs', (UI.fs || 24) + 'px');
   $$('#pyMode button').forEach(b => b.classList.toggle('on', b.dataset.v === UI.py));
@@ -1719,7 +1777,7 @@ async function doExport(o) {
     .pdf .tkl{flex:none;width:86px;font-family:Inter,sans-serif;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:#888;padding-top:6px}
     .pdf .tkp-mistake .tkl{color:#c0463e}.pdf .tkp-good .tkl{color:#2f8a55}.pdf .tkp-word .tkl{color:#3a7590}
     .pdf .tkp .zt{font-size:17px}
-    .pdf .c-c{color:#b8336a}.pdf .c-s,.pdf .c-s .h{color:#9b2c8f}.pdf .c-v,.pdf .c-v .h{color:#3f8f2a}.pdf .c-n{color:#c46a12}.pdf .c-a{color:#1f7f86}.pdf .c-t{color:#8a6d1d}.pdf .c-o{color:#5b6b8a}.pdf .c-k{color:#1d5fa8;font-weight:700}
+    .pdf .c-u,.pdf .c-u .h{color:#7d3cb5}.pdf .c-m,.pdf .c-m .h{color:#a67c00}.pdf .c-c{color:#b8336a}.pdf .c-s,.pdf .c-s .h{color:#9b2c8f}.pdf .c-v,.pdf .c-v .h{color:#3f8f2a}.pdf .c-n{color:#c46a12}.pdf .c-a{color:#1f7f86}.pdf .c-t{color:#8a6d1d}.pdf .c-o{color:#5b6b8a}.pdf .c-k{color:#1d5fa8;font-weight:700}
     .pdf .c-bad,.pdf .c-bad .h,.pdf .h.c-bad{color:#c0392b;text-decoration:line-through;text-decoration-color:#c0392b}.pdf .exn.bad{color:#c0392b;font-weight:700;font-size:15px}.pdf .badn{display:block;font-family:Inter,sans-serif;font-size:10px;font-weight:700;color:#c0392b;margin-top:4px}.pdf .ex.exbad{border-left-color:#e7a29a}
     .pdf .c-x,.pdf .h.c-x{color:#c45400;font-weight:700;text-decoration:underline;text-decoration-color:#e67e22}.pdf .xtag{font-family:"Noto Serif TC",serif;font-size:11px;font-weight:700;color:#c45400;border:1px solid #e67e22;border-radius:9px;padding:0 6px;margin-left:6px;white-space:nowrap}
     .pdf .drml{display:inline-block;vertical-align:top}.pdf .dr-line{margin:1px 0}.pdf .dr-hint{font-family:Inter,sans-serif;font-size:11px;font-style:italic;color:#777;margin-top:3px}.pdf .dr-spk{margin-right:2px}
@@ -1734,7 +1792,7 @@ async function doExport(o) {
     .pdf .dimgp{display:inline-block;vertical-align:top;margin:4px 8px 4px 0;max-width:48%}.pdf .dimgp img{max-width:100%;max-height:200px;border-radius:6px}.pdf .dimgp .en{font-size:11px}
     .pdf .gimgp{text-align:center;margin:8px 0}.pdf .gimgp img{max-width:100%;max-height:300px;border-radius:6px}
     .pdf .wm{margin:40px 0 4px;text-align:center;font-family:Inter,"Segoe UI",sans-serif;font-size:46px;font-weight:700;letter-spacing:2px;color:#7BAFC8;opacity:.28;page-break-inside:avoid;break-inside:avoid}
-    .pdf .roline{font-family:Inter,sans-serif;color:#999;margin:2px 0 0 18px;font-size:14px}
+    .pdf .sro{color:#24343c}.pdf .ro-mis{display:inline-block;background:transparent!important;border:1.5px solid #c0392b;border-radius:4px;padding:0 3px;margin:0 2px}.pdf .roline{font-family:Inter,sans-serif;color:#999;margin:2px 0 0 18px;font-size:14px}
     .pdf .h{line-height:1.35}.pdf .zt.wp .h{line-height:1.05}.pdf .zt.wp .r{line-height:1;margin-bottom:${UI.gapPy ?? 1}pt}.pdf .zt.wp .c{margin-top:${UI.gapLine ?? 5}pt}.pdf .para.tdp{line-height:1.3}.pdf .td-ign,.pdf .td-ign .h,.pdf .td-ign .r{color:#bbb}.pdf .hl-note{font-family:Inter,"Segoe UI","Microsoft JhengHei",sans-serif;font-size:10px;color:#8a6d1d;background:#fff6d6;border-radius:6px;padding:0 5px;margin:0 3px}.pdf .hl-mean{font-family:Inter,"Segoe UI",sans-serif;font-size:10px;color:#3f7a3f;background:#e3f5e3;border-radius:6px;padding:0 5px;margin:0 3px;white-space:nowrap}.pdf .para.tdp{display:block;padding:4px 0;line-height:1.2}.pdf .tdp .f-hl{border-radius:3px}.pdf td.cat{font-size:11px;white-space:nowrap}.pdf td.cat span{border-radius:4px;padding:1px 5px}.pdf .spk{color:#3e7a96}.pdf .t{border-radius:3px}
     .pdf .hl-y{background:#ffe58a}.pdf .hl-g{background:#bfeec0}.pdf .hl-p{background:#ffc6d3}.pdf .hl-b{background:#c3dfff}
     .pdf .h{border-radius:0;padding:0 1px}.pdf .c{padding:0}.pdf .c .r{padding:0 2px}.pdf .c .h{align-self:stretch;text-align:center;padding:0 1px}.pdf .td-word{text-decoration:none!important;box-shadow:none!important}.pdf .td-word .h{text-decoration:underline;text-decoration-color:#2f8a55}.pdf .td-word,.pdf .td-word .h{color:#1f6b3f}/* 注音 mode: the same colour band as pinyin, one even shade on the character and its 注音 */.pdf .c.zy .hl-y{background:#ffe58a!important}.pdf .c.zy .hl-g{background:#bfeec0!important}.pdf .c.zy .hl-p{background:#ffc6d3!important}.pdf .c.zy .hl-b{background:#c3dfff!important}.pdf .c.zy .h,.pdf .c.zy .zv{border:0;border-radius:0}.pdf td .zt{font-size:18px}.pdf td.nt .zt{font-size:15px}.pdf td.nt .r{font-size:8px}
@@ -1768,7 +1826,7 @@ document.addEventListener('keydown', e => { if (e.target && e.target.id === 'tkD
 
 document.addEventListener('compositionstart', e => { if (e.target.id === 'tkDoc') WB_COMPOSING = true; });
 document.addEventListener('compositionend', e => { if (e.target.id === 'tkDoc') { WB_COMPOSING = false; wbSchedule(e.target); } });
-document.addEventListener('blur', e => { if (e.target && e.target.id === 'tkDoc') wbRedraw(e.target); }, true);
+document.addEventListener('blur', e => { if (e.target && e.target.id === 'tkDoc') { tdSaveNow(); wbRedraw(e.target); } }, true);
 document.addEventListener('input', e => { if (e.target.id === 'tkDoc') tdChanged(); });
 document.addEventListener('paste', e => { if (e.target.closest && e.target.closest('.rt')) { e.preventDefault(); const t = e.clipboardData?.getData('text/plain') || ''; document.execCommand('insertText', false, t); } });
 { const m = $('#hlMenu'); if (m) m.innerHTML = HL_CATS.map(([c, zh, en]) => `<button class="swl" data-tdhl="${c}" title="${en}"><i class="sw ${c}"></i>${zh}</button>`).join('') + '<button class="swl" data-tdhl="" title="Remove the highlight"><i class="sw" style="background:transparent;border:1px dashed var(--muted)"></i>清除螢光筆</button>'; }
@@ -1796,9 +1854,21 @@ document.addEventListener('click', e => {
   const box = inSel || (LAST_RT && LAST_RT.isConnected ? LAST_RT : null);
   if (!box) return toast('先點一下白板 Click in the whiteboard first');
   if (!inSel) box.focus();
+  const fk = { bold: 'b', underline: 'u', strikeThrough: 's' }[b.dataset.tdcmd];
+  if (box.id === 'tkDoc' && fk && inSel && !getSelection().isCollapsed) return wbFormat(box, fk);   // B / U / S toggle on and off reliably on the whiteboard
   document.execCommand('styleWithCSS', false, false); document.execCommand(b.dataset.tdcmd, false, null);
   box.dispatchEvent(new Event('input', { bubbles: true }));
 });
+function wbFormat(ed, key) {
+  const r = getSelection().getRangeAt(0); const A = wbPos(ed, r.startContainer, r.startOffset), B = wbPos(ed, r.endContainer, r.endOffset);
+  const lines = edLines(ed); const inR = (li, s0, e0) => { const from = li === A.line ? A.ch : 0, to = li === B.line ? B.ch : 1e9; return [Math.max(s0, from), Math.min(e0, to)]; };
+  let all = true; for (let li = A.line; li <= B.line && li < lines.length; li++) { let at = 0; for (const x of lines[li]) { const [a, b] = inR(li, at, at + x.t.length); if (a < b && !x[key]) all = false; at += x.t.length; } }
+  for (let li = A.line; li <= B.line && li < lines.length; li++) { const out = []; let at = 0;
+    for (const x of lines[li]) { const s0 = at, e0 = at + x.t.length; at = e0; const [a, b] = inR(li, s0, e0); if (a >= b) { out.push(x); continue; }
+      if (a > s0) out.push({ ...x, t: x.t.slice(0, a - s0) }); out.push({ ...x, t: x.t.slice(a - s0, b - s0), [key]: !all }); if (b < e0) out.push({ ...x, t: x.t.slice(b - s0) }); }
+    lines[li] = out; }
+  ed._sig = null; wbApply(ed, lines); saveTalkDoc(linesText(lines), linesHtml(lines));
+}
 let skipClick = false;
 document.addEventListener('mouseup', e => {
   if (!(e.target.closest && e.target.closest('#tkDoc'))) return;
